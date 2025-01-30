@@ -11,3 +11,21 @@ build/
 # IDE
 .idea/
 .vscode/
+
+# Notebooks
+notebooks/# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+.venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Notebooks
+notebooks/
