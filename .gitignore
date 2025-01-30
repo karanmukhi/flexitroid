@@ -27,5 +27,5 @@ build/
 .idea/
 .vscode/
 
-# Notebooks
-notebooks/
+# Development
+development/
