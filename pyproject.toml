@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "flextroid"
+version = "0.1.0"
+description = "A repository for aggregating flexibility in populations of distributed energy resources (DERs)."
+authors = ["Karan Mukhi <karan.mukhi@cs.ox.ac.uk>"]
+license = "MIT License"
+readme = "README.md"
+packages = [{include = "flextroid"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"  # Updated Python version requirement
+numpy = "^2.2.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+black = "^23.7.0"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
