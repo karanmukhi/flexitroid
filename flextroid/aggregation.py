@@ -117,27 +117,27 @@ class GeneralDER(Device):
         t_max = max(A)
         T_t = self._get_time_interval(t_max)
         A_complement = T_t - A
-        b = np.sum(self.u_u[list(A)])
-        p_c = np.sum(self.u_l[list(A_c)])
+        b = np.sum(self.u_max[list(A)])
+        p_c = np.sum(self.u_min[list(A_c)])
         t_set = set()
         for t in range(t_max):
             t_set.add(t)
             b = np.min(
                 [
                     b,
-                    self.x_u[t]
+                    self.x_max[t]
                     - p_c
-                    + np.sum(self.u_l[list(A_c - t_set)])
-                    + np.sum(self.u_u[list(A - t_set)]),
+                    + np.sum(self.u_min[list(A_c - t_set)])
+                    + np.sum(self.u_max[list(A - t_set)]),
                 ]
             )
             p_c = np.max(
                 [
                     p_c,
-                    self.x_l[t]
+                    self.x_min[t]
                     - b
-                    + np.sum(self.u_u[list(A - t_set)])
-                    + np.sum(self.u_l[list(A_c - t_set)]),
+                    + np.sum(self.u_max[list(A - t_set)])
+                    + np.sum(self.u_min[list(A_c - t_set)]),
                 ]
             )
         return b
@@ -162,7 +162,7 @@ class GeneralDER(Device):
         p = np.sum(self.u_l[list(A)])
         b_c = np.sum(self.u_u[list(A_c)])
         t_set = set()
-        
+
         for t in range(t_max):
             t_set.add(t)
             p = np.max(
@@ -192,16 +192,141 @@ class PV(GeneralDER):
     This class implements the flexibility set for a PV system with
     curtailment capabilities but no energy storage.
     """
-    pass
+    def __init__(self, u_min: np.ndarray, u_max: np.ndarray):
+        """Initialize PV flexibility set with power bounds only.
+        
+        Args:
+            u_min: Lower bound on power consumption for each timestep.
+            u_max: Upper bound on power consumption for each timestep.
+        """
+        T = len(u_min)
+        assert len(u_max) == T, "Power bounds must have same length"
+        assert np.all(u_min <= u_max), "Invalid power bounds"
+        
+        # Create DER parameters with infinite energy bounds
+        params = DERParameters(
+            u_min=u_min,
+            u_max=u_max,
+            x_min=np.full(T, -np.inf),
+            x_max=np.full(T, np.inf)
+        )
+        super().__init__(params)
 
 
-class EV(GeneralDER):
-    """Electric vehicle flexibility set representation.
+class V2G(GeneralDER):
+    """Vehicle-to-Grid Level 2 flexibility set representation.
     
     This class implements the flexibility set for an EV with
-    bidirectional charging capabilities and battery storage.
+    bidirectional charging capabilities (V2G) and battery storage.
+    
+    The V2G has time-dependent constraints based on arrival and departure times:
+    - Power bounds are 0 outside the charging window (before arrival, after departure)
+    - State of charge has different bounds before and after departure, to reflect consumer requirements when the vehicle departs
+    - Supports bidirectional power flow (both charging and discharging)
     """
-    pass
+    def __init__(self, T: int, a: int, d: int, 
+                 u_min: float, u_max: float,
+                 x_min: float, x_max: float,
+                 e_min: float, e_max: float):
+        """Initialize EV flexibility set with time-dependent constraints.
+        
+        Args:
+            T: Time horizon length
+            a: Arrival time
+            d: Departure time
+            u_min: Minimum power consumption during charging window
+            u_max: Maximum power consumption during charging window
+            x_min: Minimum state of charge before departure
+            x_max: Maximum state of charge before departure
+            e_min: Minimum state of charge after departure
+            e_max: Maximum state of charge after departure
+        """
+        assert 0 <= a < d <= T, "Invalid arrival/departure times"
+        assert u_min <= u_max, "Invalid power bounds"
+        assert x_min <= x_max, "Invalid pre-departure SoC bounds"
+        assert e_min <= e_max, "Invalid post-departure SoC bounds"
+        
+        # Create power bound arrays with zeros outside charging window
+        u_min_arr = np.zeros(T)
+        u_max_arr = np.zeros(T)
+        u_min_arr[a:d] = u_min
+        u_max_arr[a:d] = u_max
+        
+        # Create SoC bound arrays with different constraints before/after departure
+        x_min_arr = np.full(T, -np.inf)  # Initialize with no constraints
+        x_max_arr = np.full(T, np.inf)   # Initialize with no constraints
+        
+        # Set SoC bounds before departure
+        x_min_arr[:d] = x_min
+        x_max_arr[:d] = x_max
+        
+        # Set SoC bounds after departure
+        x_min_arr[d:] = e_min
+        x_max_arr[d:] = e_max
+        
+        # Initialize parent class with constructed parameter arrays
+        params = DERParameters(
+            u_min=u_min_arr,
+            u_max=u_max_arr,
+            x_min=x_min_arr,
+            x_max=x_max_arr
+        )
+        super().__init__(params)
+
+
+class V1G(GeneralDER):
+    """Vehicle-to-Grid Level 1 flexibility set representation.
+    
+    This class implements the flexibility set for an EV with
+    unidirectional charging capabilities (charging only, no discharging)
+    and battery storage.
+    
+    The V1G has time-dependent constraints based on arrival and departure times:
+    - Power bounds are 0 outside the charging window (before arrival, after departure)
+    - State of charge has different bounds before and after departure
+    - Only allows positive power flow (charging only)
+    """
+    def __init__(self, T: int, a: int, d: int, 
+                 u_max: float,
+                 e_min: float, e_max: float):
+        """Initialize V1G flexibility set with time-dependent constraints.
+        
+        Args:
+            T: Time horizon length
+            a: Arrival time
+            d: Departure time
+            u_max: Maximum power consumption during charging window
+            x_min: Minimum state of charge before departure
+            x_max: Maximum state of charge before departure
+            e_min: Minimum state of charge after departure
+            e_max: Maximum state of charge after departure
+        """
+        assert 0 <= a < d <= T, "Invalid arrival/departure times"
+        assert 0 <= u_max, "Invalid power bounds (must be non-negative)"
+        assert e_min <= e_max, "Invalid post-departure SoC bounds"
+        
+        # Create power bound arrays with zeros outside charging window
+        u_min_arr = np.zeros(T)
+        u_max_arr = np.zeros(T)
+        u_min_arr[a:d] = u_min
+        u_max_arr[a:d] = u_max
+        
+        # Create SoC bound arrays with different constraints before/after departure
+        x_min_arr = np.full(T, -np.inf)  # Initialize with no constraints
+        x_max_arr = np.full(T, np.inf)   # Initialize with no constraints
+        
+        # Set SoC bounds after departure
+        x_min_arr[d:] = e_min
+        x_max_arr[d:] = e_max
+        
+        # Initialize parent class with constructed parameter arrays
+        params = DERParameters(
+            u_min=u_min_arr,
+            u_max=u_max_arr,
+            x_min=x_min_arr,
+            x_max=x_max_arr
+        )
+        super().__init__(params)
 
 
 class ESS(GeneralDER):
@@ -210,53 +335,24 @@ class ESS(GeneralDER):
     This class implements the flexibility set for a stationary
     energy storage system with bidirectional power flow.
     """
-    pass
-
-
-D = TypeVar('D', bound=Device)
-
-class Aggregator(Generic[D]):
-    """Generic aggregator for device flexibility sets.
-    
-    This class implements the aggregate flexibility set F(Ξₙ) as the Minkowski
-    sum of individual flexibility sets, represented as a g-polymatroid.
-    """
-    
-    def __init__(self, devices: List[D]):
-        """Initialize the aggregate flexibility set.
+    def __init__(self, u_min: float, u_max: float, x_min: float, x_max: float, T: int):
+        """Initialize ESS flexibility set with constant power and energy bounds.
         
         Args:
-            devices: List of devices to aggregate.
+            u_min: Lower bound on power consumption (constant over time).
+            u_max: Upper bound on power consumption (constant over time).
+            x_min: Lower bound on state of charge (constant over time).
+            x_max: Upper bound on state of charge (constant over time).
+            T: Time horizon length.
         """
-        if not devices:
-            raise ValueError("Must provide at least one device")
-            
-        self.devices = devices
-        self.T = devices[0].T
+        assert u_min <= u_max, "Invalid power bounds"
+        assert x_min <= x_max, "Invalid energy bounds"
         
-        # Validate all devices have same time horizon
-        for device in devices[1:]:
-            if device.T != self.T:
-                raise ValueError("All devices must have same time horizon")
-                
-    def b(self, A: Set[int]) -> float:
-        """Compute aggregate submodular function b.
-        
-        Args:
-            A: Subset of the ground set T.
-            
-        Returns:
-            Sum of individual b functions over all devices.
-        """
-        return sum(device.b(A) for device in self.devices)
-        
-    def p(self, A: Set[int]) -> float:
-        """Compute aggregate supermodular function p.
-        
-        Args:
-            A: Subset of the ground set T.
-            
-        Returns:
-            Sum of individual p functions over all devices.
-        """
-        return sum(device.p(A) for device in self.devices)
+        # Create DER parameters with constant bounds
+        params = DERParameters(
+            u_min=np.full(T, u_min),
+            u_max=np.full(T, u_max),
+            x_min=np.full(T, x_min),
+            x_max=np.full(T, x_max)
+        )
+        super().__init__(params)
