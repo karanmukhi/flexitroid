@@ -68,6 +68,44 @@ class V2G(GeneralDER):
         )
         super().__init__(params)
 
+    @classmethod
+    def example(cls, T: int = 24) -> "V2G":
+        """Create an example V2G (bidirectional EV) with typical parameters.
+        
+        Creates an EV that:
+        - Arrives at 6pm (hour 18)
+        - Departs at 7am next day (hour 31)
+        - Can charge at 11kW and discharge at 11kW (typical V2G)
+        - Maintains 20-90% SoC while connected
+        - Requires 50-80% SoC at departure
+        
+        Args:
+            T: Number of timesteps (default 24 for hourly resolution)
+            
+        Returns:
+            V2G instance with example parameters
+        """
+        # Timing parameters
+        a = 0  # Arrival at 6pm
+        d = min(13, T) # Departure at 7am (or T if shorter horizon)
+        
+        # Power parameters (kW)
+        u_min = -11.0  # 11kW discharge
+        u_max = 11.0   # 11kW charge
+        
+        # Energy parameters (kWh)
+        capacity = 100.0  # 100kWh battery
+        x_min = 0.2 * capacity  # 20% minimum while connected
+        x_max = 0.9 * capacity  # 90% maximum while connected
+        e_min = 0.5 * capacity  # 50% minimum at departure
+        e_max = 0.8 * capacity  # 80% maximum at departure
+        
+        return cls(T=T, a=a, d=d, 
+                  u_min=u_min, u_max=u_max,
+                  x_min=x_min, x_max=x_max,
+                  e_min=e_min, e_max=e_max)
+
+
 class E2S(GeneralDER):
     """Energy storage system flexibility set representation.
 
@@ -96,3 +134,33 @@ class E2S(GeneralDER):
             x_max=np.full(T, x_max),
         )
         super().__init__(params)
+
+    @classmethod
+    def example(cls, T: int = 24) -> "E2S":
+        """Create an example E2S (bidirectional storage) with typical parameters.
+        
+        Creates a storage system that:
+        - Has 50kWh capacity
+        - Can charge/discharge at 25kW
+        - Maintains 10-90% state of charge
+        
+        Args:
+            T: Number of timesteps (default 24 for hourly resolution)
+            
+        Returns:
+            E2S instance with example parameters
+        """
+        # Power parameters (kW)
+        u_min = -25.0  # 25kW discharge
+        u_max = 25.0   # 25kW charge
+        
+        # Energy parameters (kWh)
+        capacity = 50.0  # 50kWh storage
+        soc_min = 0.1   # 10% minimum
+        soc_max = 0.9   # 90% maximum
+        
+        x_min = capacity * soc_min  # 5kWh minimum
+        x_max = capacity * soc_max  # 45kWh maximum
+        
+        return cls(u_min=u_min, u_max=u_max,
+                  x_min=x_min, x_max=x_max, T=T)
