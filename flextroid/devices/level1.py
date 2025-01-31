@@ -107,8 +107,8 @@ class V1G(GeneralDER):
             V1G instance with example parameters
         """
         # Timing parameters
-        a = 18  # Arrival at 6pm
-        d = min(31, T)  # Departure at 7am (or T if shorter horizon)
+        a = 0  # Arrival at 6pm
+        d = min(T, 12) # Departure at 7am (or T if shorter horizon)
         
         # Power and energy parameters
         u_max = 7.2    # 7.2kW Level 2 charging

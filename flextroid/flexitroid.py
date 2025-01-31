@@ -62,11 +62,13 @@ class Flexitroid(ABC):
         v = np.zeros(self.T + 1)
 
         # Apply greedy algorithm
-        S_prev = set()
-        for k, idx in enumerate(pi, 1):
-            S_k = set(pi[:k])
-            v[idx] = self._b_star(S_k) - self._b_star(S_prev)
-            S_prev = S_k
+        S_k = set()
+        b_star_prev = 0
+        for k in pi:
+            S_k.add(int(k))
+            b_star = self._b_star(S_k)
+            v[k] = b_star - b_star_prev
+            b_star_prev = b_star
 
         # Project solution by removing t* component
         return v[:-1]

@@ -39,8 +39,8 @@ class PV(GeneralDER):
         Returns:
             Value of b(A) as defined in Section II-D of the paper
         """
-        return np.sum(self.params.u_max[A])
-
+        return np.sum(self.params.u_max[list(A)])
+        
     def p(self, A: Set[int]) -> float:
         """Compute supermodular function p for the g-polymatroid representation.
 
@@ -50,7 +50,7 @@ class PV(GeneralDER):
         Returns:
             Value of p(A) as defined in Section II-D of the paper
         """
-        return np.sum(self.params.u_min[A])
+        return np.sum(self.params.u_min[list(A)])
 
     @classmethod
     def example(cls, T: int = 24) -> "PV":

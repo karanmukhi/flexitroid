@@ -70,29 +70,29 @@ class GeneralDER(Flexitroid):
             return 0.0
 
         t_max = max(A)
-        T_t = self._get_time_interval(t_max)
+        T_t = set(range(t_max + 1))
         A_c = T_t - A
-        b = np.sum(self.u_max[list(A)])
-        p_c = np.sum(self.u_min[list(A_c)])
+        b = np.sum(self.params.u_max[list(A)])
+        p_c = np.sum(self.params.u_min[list(A_c)])
         t_set = set()
         for t in range(t_max):
             t_set.add(t)
             b = np.min(
                 [
                     b,
-                    self.x_max[t]
+                    self.params.x_max[t]
                     - p_c
-                    + np.sum(self.u_min[list(A_c - t_set)])
-                    + np.sum(self.u_max[list(A - t_set)]),
+                    + np.sum(self.params.u_min[list(A_c - t_set)])
+                    + np.sum(self.params.u_max[list(A - t_set)]),
                 ]
             )
             p_c = np.max(
                 [
                     p_c,
-                    self.x_min[t]
+                    self.params.x_min[t]
                     - b
-                    + np.sum(self.u_max[list(A - t_set)])
-                    + np.sum(self.u_min[list(A_c - t_set)]),
+                    + np.sum(self.params.u_max[list(A - t_set)])
+                    + np.sum(self.params.u_min[list(A_c - t_set)]),
                 ]
             )
         return b
@@ -110,11 +110,11 @@ class GeneralDER(Flexitroid):
             return 0.0
 
         t_max = max(A)
-        T_t = self._get_time_interval(t_max)
+        T_t = set(range(t_max + 1))
         A_c = T_t - A
 
-        p = np.sum(self.u_l[list(A)])
-        b_c = np.sum(self.u_u[list(A_c)])
+        p = np.sum(self.params.u_min[list(A)])
+        b_c = np.sum(self.params.u_max[list(A_c)])
         t_set = set()
 
         for t in range(t_max):
@@ -122,19 +122,19 @@ class GeneralDER(Flexitroid):
             p = np.max(
                 [
                     p,
-                    self.x_l[t]
+                    self.params.x_min[t]
                     - b_c
-                    + np.sum(self.u_u[list(A_c - t_set)])
-                    + np.sum(self.u_l[list(A - t_set)]),
+                    + np.sum(self.params.u_max[list(A_c - t_set)])
+                    + np.sum(self.params.u_min[list(A - t_set)]),
                 ]
             )
             b_c = np.min(
                 [
                     b_c,
-                    self.x_u[t]
+                    self.params.x_max[t]
                     - p
-                    + np.sum(self.u_l[list(A - t_set)])
-                    + np.sum(self.u_u[list(A_c - t_set)]),
+                    + np.sum(self.params.u_min[list(A - t_set)])
+                    + np.sum(self.params.u_max[list(A_c - t_set)]),
                 ]
             )
         return p
