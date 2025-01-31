@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Set, Optional, TypeVar, Generic
 import numpy as np
 
+
 class Flexitroid(ABC):
     """Abstract base class for flexiblity of DERs and aggregations of DERS.
 
@@ -42,7 +43,6 @@ class Flexitroid(ABC):
             return -self.p(T_set - A)
         return self.b(A)
 
-    
     def solve_linear_program(self, c: np.ndarray) -> np.ndarray:
         """Solve a linear program over the g-polymatroid using the greedy algorithm.
 

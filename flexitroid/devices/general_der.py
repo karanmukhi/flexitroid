@@ -59,14 +59,18 @@ class GeneralDER(Flexitroid):
 
     @property
     def A_b(self) -> np.ndarray:
-
         A = np.vstack(
             [-np.eye(self.T), np.eye(self.T), -np.tri(self.T), np.tri(self.T)]
         )
-        b = np.concatenate([-self.params.u_min, self.params.u_max, -self.params.x_min, self.params.x_max])
+        b = np.concatenate(
+            [
+                -self.params.u_min,
+                self.params.u_max,
+                -self.params.x_min,
+                self.params.x_max,
+            ]
+        )
         return A, b
-    
-    
 
     def b(self, A: Set[int]) -> float:
         """Compute submodular function b for the g-polymatroid representation.
@@ -153,34 +157,29 @@ class GeneralDER(Flexitroid):
     @classmethod
     def example(cls, T: int = 24) -> "GeneralDER":
         """Create an example DER with typical power and energy constraints.
-        
+
         Creates a DER with:
         - Bidirectional power flow (-2kW to 2kW)
         - Energy storage capacity of 10kWh
         - Must maintain state of charge between 20% and 80%
-        
+
         Args:
             T: Number of timesteps (default 24 for hourly resolution)
-            
+
         Returns:
             GeneralDER instance with example parameters
         """
         # Power bounds (kW)
         u_min = np.full(T, -2.0)  # Can discharge up to 2kW
-        u_max = np.full(T, 2.0)   # Can charge up to 2kW
-        
+        u_max = np.full(T, 2.0)  # Can charge up to 2kW
+
         # Energy bounds (kWh)
         capacity = 10.0  # 10kWh battery
-        soc_min = 0.2   # 20% minimum state of charge
-        soc_max = 0.8   # 80% maximum state of charge
-        
+        soc_min = 0.2  # 20% minimum state of charge
+        soc_max = 0.8  # 80% maximum state of charge
+
         x_min = np.full(T, capacity * soc_min)  # 2kWh minimum
         x_max = np.full(T, capacity * soc_max)  # 8kWh maximum
-        
-        params = DERParameters(
-            u_min=u_min,
-            u_max=u_max,
-            x_min=x_min,
-            x_max=x_max
-        )
+
+        params = DERParameters(u_min=u_min, u_max=u_max, x_min=x_min, x_max=x_max)
         return cls(params)

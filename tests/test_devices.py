@@ -11,36 +11,42 @@ def test_pv_vertex():
     device = PV.example()
     device_vertex_tester(device)
 
+
 def test_v1g_vertex():
     device = V1G.example()
     device_vertex_tester(device)
+
 
 def test_v2g_vertex():
     device = V2G.example()
     device_vertex_tester(device)
 
+
 def test_e1s_vertex():
     device = E1S.example()
     device_vertex_tester(device)
 
+
 def test_e2s_vertex():
     device = E2S.example()
     device_vertex_tester(device)
+
 
 def test_general_der_vertex():
     device = GeneralDER.example()
     device_vertex_tester(device)
 
 
-
-
 def device_vertex_tester(device):
     T = device.T
     c = np.random.uniform(size=T)
-    A,b = device.A_b
+    A, b = device.A_b
     lp_sol = lp_solution(A, b, c)
     gp_sol = device.solve_linear_program(c)
-    assert np.linalg.norm(gp_sol - lp_sol) < 1e-3  # Increased tolerance for numerical stability
+    assert (
+        np.linalg.norm(gp_sol - lp_sol) < 1e-3
+    )  # Increased tolerance for numerical stability
+
 
 def lp_solution(A, b, c):
     """Solve linear program to find optimal solution.

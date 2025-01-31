@@ -93,28 +93,28 @@ class V1G(GeneralDER):
     @classmethod
     def example(cls, T: int = 24) -> "V1G":
         """Create an example V1G (unidirectional EV) with typical parameters.
-        
+
         Creates an EV that:
         - Arrives at 6pm (hour 0)
         - Departs at 7am next day (hour 13)
         - Can charge at 7.2kW (typical Level 2 charger)
         - Needs 30-80% state of charge at departure
-        
+
         Args:
             T: Number of timesteps (default 24 for hourly resolution)
-            
+
         Returns:
             V1G instance with example parameters
         """
         # Timing parameters
         a = 0  # Arrival at 6pm
-        d = min(T, 12) # Departure at 7am (or T if shorter horizon)
-        
+        d = min(T, 12)  # Departure at 7am (or T if shorter horizon)
+
         # Power and energy parameters
-        u_max = 7.2    # 7.2kW Level 2 charging
-        e_min = 20.0   # Minimum 20kWh (30% of 66.6kWh battery)
-        e_max = 53.3   # Maximum 53.3kWh (80% of 66.6kWh battery)
-        
+        u_max = 7.2  # 7.2kW Level 2 charging
+        e_min = 20.0  # Minimum 20kWh (30% of 66.6kWh battery)
+        e_max = 53.3  # Maximum 53.3kWh (80% of 66.6kWh battery)
+
         return cls(T=T, a=a, d=d, u_max=u_max, e_min=e_min, e_max=e_max)
 
 
@@ -143,24 +143,24 @@ class E1S(V1G):
     @classmethod
     def example(cls, T: int = 24) -> "E1S":
         """Create an example E1S (unidirectional storage) with typical parameters.
-        
+
         Creates a storage system that:
         - Has 10kWh capacity
         - Can charge at 5kW
         - Maintains 20-80% state of charge
-        
+
         Args:
             T: Number of timesteps (default 24 for hourly resolution)
-            
+
         Returns:
             E1S instance with example parameters
         """
         capacity = 10.0  # 10kWh storage
-        u_max = 5.0     # 5kW charging
-        soc_min = 0.2   # 20% minimum
-        soc_max = 0.8   # 80% maximum
-        
+        u_max = 5.0  # 5kW charging
+        soc_min = 0.2  # 20% minimum
+        soc_max = 0.8  # 80% maximum
+
         x_min = capacity * soc_min  # 2kWh minimum
         x_max = capacity * soc_max  # 8kWh maximum
-        
+
         return cls(u_max=u_max, x_min=x_min, x_max=x_max, T=T)

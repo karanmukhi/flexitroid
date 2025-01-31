@@ -10,7 +10,7 @@ t = np.arange(T)
 peak_power = 5.0  # Maximum power output in kW
 
 # Create a bell-shaped curve for maximum power generation
-u_max = peak_power * np.exp(-((t - 12)**2) / 20)
+u_max = peak_power * np.exp(-((t - 12) ** 2) / 20)
 
 # Minimum power is 0 (full curtailment possible)
 u_min = np.zeros(T)
