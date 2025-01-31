@@ -72,4 +72,3 @@ class Flexitroid(ABC):
 
         # Project solution by removing t* component
         return v[:-1]
-

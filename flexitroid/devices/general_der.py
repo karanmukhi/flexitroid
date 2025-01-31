@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Set
 import numpy as np
 
-from flextroid.flexitroid import Flexitroid
+from flexitroid.flexitroid import Flexitroid
 
 
 @dataclass
@@ -56,6 +56,17 @@ class GeneralDER(Flexitroid):
     @property
     def T(self) -> int:
         return self._T
+
+    @property
+    def A_b(self) -> np.ndarray:
+
+        A = np.vstack(
+            [-np.eye(self.T), np.eye(self.T), -np.tri(self.T), np.tri(self.T)]
+        )
+        b = np.concatenate([-self.params.u_min, self.params.u_max, -self.params.x_min, self.params.x_max])
+        return A, b
+    
+    
 
     def b(self, A: Set[int]) -> float:
         """Compute submodular function b for the g-polymatroid representation.
