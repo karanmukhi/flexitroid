@@ -28,10 +28,6 @@ class GPolymatroidOptimizer:
         self.T = T
         self._validate_paramodularity()
     
-    def _validate_paramodularity(self):
-        """Validate that (p,b) is a paramodular pair."""
-        # TODO: Implement paramodularity check
-        pass
     
     def _b_star(self, A: Set) -> float:
         """Extended set function b* for the lifted base polyhedron.
