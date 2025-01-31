@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "flextroid"
+name = "flexitroid"
 version = "0.1.0"
 description = "A repository for aggregating flexibility in populations of distributed energy resources (DERs)."
 authors = ["Karan Mukhi <karan.mukhi@cs.ox.ac.uk>"]
