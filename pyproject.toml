@@ -11,6 +11,7 @@ packages = [{include = "flexitroid"}]
 python = ">=3.10,<4.0"  # Updated Python version requirement
 numpy = "^2.2.2"
 cvxpy = "^1.6.0"
+matplotlib = "^3.10.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

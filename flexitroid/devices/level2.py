@@ -68,6 +68,16 @@ class V2G(GeneralDER):
             u_min=u_min_arr, u_max=u_max_arr, x_min=x_min_arr, x_max=x_max_arr
         )
         super().__init__(params)
+        self.a = a
+        self.d = d
+        self.u_max = u_max
+        self.u_min = u_min
+        self.x_min = x_min
+        self.x_max = x_max
+        self.e_min = e_min
+        self.e_max = e_max
+        self.active = set(range(a, d))
+
 
     @classmethod
     def example(cls, T: int = 24) -> "V2G":
@@ -96,10 +106,12 @@ class V2G(GeneralDER):
 
         # Energy parameters (kWh)
         capacity = 100.0  # 100kWh battery
-        x_min = 0.2 * capacity  # 20% minimum while connected
-        x_max = 0.9 * capacity  # 90% maximum while connected
-        e_min = 0.5 * capacity  # 50% minimum at departure
-        e_max = 0.8 * capacity  # 80% maximum at departure
+        x_0 = capacity*np.random.uniform(0.2, 0.9)
+
+        x_min = 0.2 * capacity - x_0 # 20% minimum while connected
+        x_max = 0.9 * capacity - x_0  # 90% maximum while connected
+        e_min = 0.5 * capacity - x_0  # 50% minimum at departure
+        e_max = 0.8 * capacity - x_0  # 80% maximum at departure
 
         return cls(
             T=T,

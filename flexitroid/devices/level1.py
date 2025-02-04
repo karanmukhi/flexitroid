@@ -54,8 +54,13 @@ class V1G(GeneralDER):
         )
         self.major = self._get_major(u_max, e_max, a, d)
         self.minor = self._get_major(u_max, e_min, a, d)[::-1]
-        self.active = set(range(a, d))
         super().__init__(params)
+        self.a = a
+        self.d = d
+        self.u_max = u_max
+        self.e_min = e_min
+        self.e_max = e_max
+        self.active = set(range(a, d))
 
     def _get_major(self, u_max: float, e_max: float, a: int, d: int) -> np.ndarray:
         major = np.zeros(shape=(d - a))
