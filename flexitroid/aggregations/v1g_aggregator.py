@@ -6,18 +6,18 @@ including the Minkowski sum of individual flexibility sets.
 
 from typing import List, Set, TypeVar, Generic
 from flexitroid.flexitroid import Flexitroid
-from flexitroid.devices.generation import PV
+from flexitroid.devices.level1 import V1G
 import numpy as np
 
-D = TypeVar("D", bound=PV)
+D = TypeVar("D", bound=V1G)
 
 
-class PVAggregator(Flexitroid, Generic[D]):
+class V1GAggregator(Flexitroid, Generic[D]):
     """Generic aggregator for device flexibility sets.
 
     This class implements the aggregate flexibility set F(Ξₙ) as the Minkowski
     sum of individual flexibility sets, represented as a g-polymatroid for a set of 
-    PV devices.
+    V1G devices.
     """
 
     def __init__(self, devices: List[D]):
@@ -37,21 +37,24 @@ class PVAggregator(Flexitroid, Generic[D]):
             if device.T != self.T:
                 raise ValueError("All devices must have same time horizon")
 
-        u_min = np.zeros(self.T)
-        u_max = np.zeros(self.T)
+        major = {}
+        minor = {}
         for device in devices:
-            u_min += device.params.u_min
-            u_max += device.params.u_max
-        self._u_min = u_min
-        self._u_max = u_max
+            a, d = device.a, device.d
+            key = (a,d)
+            major[key] = major.get(key, np.zeros(d-a)) + device.major
+            minor[key] = minor.get(key, np.zeros(d-a)) + device.minor
+
+        self._major = major
+        self._minor = minor
 
     @property
-    def u_min(self) -> np.ndarray:
-        return self._u_min
+    def major(self) -> np.ndarray:
+        return self._major
 
     @property
-    def u_max(self) -> np.ndarray:
-        return self._u_max
+    def minor(self) -> np.ndarray:
+        return self._minor
 
     @property
     def T(self) -> int:
@@ -66,7 +69,7 @@ class PVAggregator(Flexitroid, Generic[D]):
         Returns:
             Value of b(A) as defined in Section II-D of the paper
         """
-        return np.sum(self.u_max[list(A)])
+        return self.modular_extracted(self.major, A)
 
     def p(self, A: Set[int]) -> float:
         """Compute supermodular function p for the g-polymatroid representation.
@@ -77,4 +80,14 @@ class PVAggregator(Flexitroid, Generic[D]):
         Returns:
             Value of p(A) as defined in Section II-D of the paper
         """
-        return np.sum(self.u_min[list(A)])
+        return self.modular_extracted(self.minor, A)
+
+    def modular_extracted(self, agg_dict, A):
+        result = 0
+        for key in agg_dict.keys():
+            active = set(range(key[0], key[1]))
+            active_intersection = active.intersection(A)
+            on_time = len(active_intersection)
+            result += np.sum(agg_dict[key][:on_time])
+        return result
+

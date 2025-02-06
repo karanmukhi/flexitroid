@@ -112,13 +112,14 @@ class V1G(GeneralDER):
             V1G instance with example parameters
         """
         # Timing parameters
-        a = 0  # Arrival at 6pm
-        d = min(T, 12)  # Departure at 7am (or T if shorter horizon)
+        a = np.random.randint(T-1)
+        d = np.random.randint(a+1,T)  # Departure at 7am (or T if shorter horizon)
 
         # Power and energy parameters
-        u_max = 7.2  # 7.2kW Level 2 charging
-        e_min = 20.0  # Minimum 20kWh (30% of 66.6kWh battery)
-        e_max = 53.3  # Maximum 53.3kWh (80% of 66.6kWh battery)
+        u_max = np.random.uniform(10) # 
+        connected_time = d-a
+        e_max = np.random.uniform(connected_time*u_max)  # Maximum 53.3kWh (80% of 66.6kWh battery)
+        e_min = np.random.uniform(e_max)  # Minimum 20kWh (30% of 66.6kWh battery)
 
         return cls(T=T, a=a, d=d, u_max=u_max, e_min=e_min, e_max=e_max)
 
@@ -160,12 +161,8 @@ class E1S(V1G):
         Returns:
             E1S instance with example parameters
         """
-        capacity = 10.0  # 10kWh storage
-        u_max = 5.0  # 5kW charging
-        soc_min = 0.2  # 20% minimum
-        soc_max = 0.8  # 80% maximum
-
-        x_min = capacity * soc_min  # 2kWh minimum
-        x_max = capacity * soc_max  # 8kWh maximum
+        u_max = np.random.uniform(10) # 
+        x_max = np.random.uniform(T*u_max)  
+        x_min = np.random.uniform(x_max)  
 
         return cls(u_max=u_max, x_min=x_min, x_max=x_max, T=T)

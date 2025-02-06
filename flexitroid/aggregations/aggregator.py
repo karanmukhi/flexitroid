@@ -5,34 +5,38 @@ including the Minkowski sum of individual flexibility sets.
 """
 
 from typing import List, Set, TypeVar, Generic
-from .aggregation import Device
+from flexitroid.flexitroid import Flexitroid
 
-D = TypeVar("D", bound=Device)
+D = TypeVar("D", bound=Flexitroid)
 
 
-class Aggregator(Generic[D]):
+class Aggregator(Flexitroid, Generic[D]):
     """Generic aggregator for device flexibility sets.
 
     This class implements the aggregate flexibility set F(Ξₙ) as the Minkowski
     sum of individual flexibility sets, represented as a g-polymatroid.
     """
 
-    def __init__(self, devices: List[D]):
+    def __init__(self, fleet: List[D]):
         """Initialize the aggregate flexibility set.
 
         Args:
-            devices: List of devices to aggregate.
+            fleet: List of fleet to aggregate.
         """
-        if not devices:
+        if not fleet:
             raise ValueError("Must provide at least one device")
 
-        self.devices = devices
-        self.T = devices[0].T
+        self.fleet = fleet
+        self._T = fleet[0].T
 
-        # Validate all devices have same time horizon
-        for device in devices[1:]:
+        # Validate all fleet have same time horizon
+        for device in fleet[1:]:
             if device.T != self.T:
-                raise ValueError("All devices must have same time horizon")
+                raise ValueError("All fleet must have same time horizon")
+
+    @property
+    def T(self) -> int:
+        return self._T
 
     def b(self, A: Set[int]) -> float:
         """Compute aggregate submodular function b.
@@ -41,9 +45,9 @@ class Aggregator(Generic[D]):
             A: Subset of the ground set T.
 
         Returns:
-            Sum of individual b functions over all devices.
+            Sum of individual b functions over all fleet.
         """
-        return sum(device.b(A) for device in self.devices)
+        return sum(device.b(A) for device in self.fleet)
 
     def p(self, A: Set[int]) -> float:
         """Compute aggregate supermodular function p.
@@ -52,6 +56,6 @@ class Aggregator(Generic[D]):
             A: Subset of the ground set T.
 
         Returns:
-            Sum of individual p functions over all devices.
+            Sum of individual p functions over all fleet.
         """
-        return sum(device.p(A) for device in self.devices)
+        return sum(device.p(A) for device in self.fleet)

@@ -67,10 +67,10 @@ class PV(GeneralDER):
         """
         # Create sinusoidal generation profile peaking at midday
         t = np.linspace(0, 2 * np.pi, T)
-        base_profile = -np.maximum(0, np.sin(t - np.pi / 2))  # Negative = generation
+        base_profile = -np.maximum(0, np.random.uniform(0.1) + np.sin(t - np.pi / 2))  # Negative = generation
 
         # Scale to realistic power bounds (kW)
-        rated_power = 5.0  # 5kW rated power
+        rated_power = np.random.uniform(10)  # 5kW rated power
         u_min = rated_power * base_profile
         u_max = np.zeros_like(u_min)  # Can curtail to zero but not consume
 
