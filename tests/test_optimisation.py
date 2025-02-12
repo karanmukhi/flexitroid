@@ -1,0 +1,56 @@
+import numpy as np
+import cvxpy as cp
+from flexitroid.devices.level1 import E1S
+import flexitroid.problems.linear as lin
+import flexitroid.problems.l_inf as linf
+
+def test_LP(T=5, n_tests=10):
+    A = np.eye(T)
+    b = np.random.uniform(size=T)
+    c = -np.random.uniform(-1,1,size=T)
+    X = E1S(1, T*(1 - np.random.uniform())/2, T*(1 + np.random.uniform())/2, T)
+
+    opt = solve_LP(X, A, b, c)
+    prob = lin.LinearProgram(X, A, b, c)
+    prob.solve()
+    assert np.linalg.norm(prob.solution - opt) < 1e-5
+
+def test_l_inf(T = 5):
+    X = E1S(1, T*(1 - np.random.uniform())/2, T*(1 + np.random.uniform())/2, T)
+
+    opt = solve_l_inf(X)
+    prob = linf.L_inf(X)
+    prob.solve()
+    assert np.linalg.norm(prob.solution - opt) < 1e-6
+
+
+
+def solve_LP(p, A, b, c):
+    Ap, bp = p.A_b
+    Ap = np.vstack([Ap, A])
+    bp = np.concatenate([bp, b])
+
+    x = cp.Variable(p.T)
+    prob = cp.Problem(cp.Minimize(c.T @ x), [Ap @ x <= bp])
+    prob.solve()
+    return x.value
+
+
+def solve_l_inf(X):
+    A, b = X.A_b
+
+    m, n = A.shape
+
+    t = cp.Variable(nonneg=True)
+    x = cp.Variable(n)
+    objective = cp.Minimize(t)
+
+
+    constraints = []
+    constraints.append(A@x <= b)
+    constraints.append(x <= t)
+    constraints.append(-x <= -t)
+    primal = cp.Problem(objective, constraints)
+    primal.solve()
+    opt = x.value
+    return opt
