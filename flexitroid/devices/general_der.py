@@ -74,6 +74,8 @@ class GeneralDER(Flexitroid):
                 self.params.x_max,
             ]
         )
+        A = A[np.isfinite(b)]
+        b = b[np.isfinite(b)]
         return A, b
 
 
