@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Set, Optional, TypeVar, Generic
 import numpy as np
+from itertools import permutations
 
 
 class Flexitroid(ABC):
@@ -72,3 +73,18 @@ class Flexitroid(ABC):
 
         # Project solution by removing t* component
         return v[:-1]
+    
+    def form_box(self):
+        C = np.vstack([np.eye(self.T) + 1, -np.eye(self.T) - 1])
+        box = np.array([self.solve_linear_program(c) for c in  C])
+        return box
+
+
+    def get_all_vertices(self):
+        perms = []
+        for t in range(self.T+1):
+            perms.append(list(permutations(np.arange(self.T) + 1 - t))) 
+
+        perms = np.array(perms).reshape(-1,self.T)
+        V = np.array([self.solve_linear_program(c) for c in perms])
+        return V
