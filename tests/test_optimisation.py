@@ -25,6 +25,7 @@ def test_l_inf(T = 5):
     assert np.linalg.norm(prob.solution - opt) < 1e-6
 
 def test_QP(T=50):
+    #TODO needs work on duality gap
     X = E1S(1, T*(1 - np.random.uniform())/2, T*(1 + np.random.uniform())/2, T)
     A, b = X.A_b
     q = np.random.uniform(T)
