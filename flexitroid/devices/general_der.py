@@ -7,7 +7,7 @@ including individual flexibility sets and their Minkowski sums.
 from dataclasses import dataclass
 from typing import Set
 import numpy as np
-
+from . import parameter_sampling as sample
 from flexitroid.flexitroid import Flexitroid
 
 
@@ -231,17 +231,7 @@ class GeneralDER(Flexitroid):
         Returns:
             GeneralDER instance with example parameters
         """
-        # Power bounds (kW)
-        u_min = np.full(T, -2.0)  # Can discharge up to 2kW
-        u_max = np.full(T, 2.0)  # Can charge up to 2kW
-
-        # Energy bounds (kWh)
-        capacity = 10.0  # 10kWh battery
-        soc_min = 0.2  # 20% minimum state of charge
-        soc_max = 0.8  # 80% maximum state of charge
-
-        x_min = np.full(T, capacity * soc_min)  # 2kWh minimum
-        x_max = np.full(T, capacity * soc_max)  # 8kWh maximum
+        u_min, u_max, x_min, x_max = sample.der(T)
 
         params = DERParameters(u_min=u_min, u_max=u_max, x_min=x_min, x_max=x_max)
         return cls(params)

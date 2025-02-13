@@ -1,5 +1,6 @@
 from .general_der import GeneralDER, DERParameters
 import numpy as np
+from . import parameter_sampling as sample
 from typing import Set
 
 
@@ -96,23 +97,7 @@ class V2G(GeneralDER):
         Returns:
             V2G instance with example parameters
         """
-        # Timing parameters
-        a = 0  # Arrival at 6pm
-        d = min(13, T)  # Departure at 7am (or T if shorter horizon)
-
-        # Power parameters (kW)
-        u_min = -11.0  # 11kW discharge
-        u_max = 11.0  # 11kW charge
-
-        # Energy parameters (kWh)
-        capacity = 100.0  # 100kWh battery
-        x_0 = capacity*np.random.uniform(0.2, 0.9)
-
-        x_min = 0.2 * capacity - x_0 # 20% minimum while connected
-        x_max = 0.9 * capacity - x_0  # 90% maximum while connected
-        e_min = 0.5 * capacity - x_0  # 50% minimum at departure
-        e_max = 0.8 * capacity - x_0  # 80% maximum at departure
-
+        a, d, u_min, u_max, x_min, x_max, e_min, e_max = sample.v2g(T)
         return cls(
             T=T,
             a=a,
@@ -182,4 +167,5 @@ class E2S(GeneralDER):
         x_min = capacity * soc_min  # 5kWh minimum
         x_max = capacity * soc_max  # 45kWh maximum
 
+        u_min, u_max, x_min, x_max = sample.e2s()
         return cls(u_min=u_min, u_max=u_max, x_min=x_min, x_max=x_max, T=T)

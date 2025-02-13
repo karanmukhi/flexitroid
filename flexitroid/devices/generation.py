@@ -1,4 +1,5 @@
 from .general_der import GeneralDER, DERParameters
+from . import parameter_sampling as sample
 import numpy as np
 from typing import Set
 
@@ -65,13 +66,5 @@ class PV(GeneralDER):
         Returns:
             PV instance with example parameters
         """
-        # Create sinusoidal generation profile peaking at midday
-        t = np.linspace(0, 2 * np.pi, T)
-        base_profile = -np.maximum(0, np.random.uniform(0.1) + np.sin(t - np.pi / 2))  # Negative = generation
-
-        # Scale to realistic power bounds (kW)
-        rated_power = np.random.uniform(10)  # 5kW rated power
-        u_min = rated_power * base_profile
-        u_max = np.zeros_like(u_min)  # Can curtail to zero but not consume
-
+        u_min, u_max = sample.generation(T)
         return cls(u_min=u_min, u_max=u_max)

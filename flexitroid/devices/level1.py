@@ -1,4 +1,5 @@
 from .general_der import GeneralDER, DERParameters
+from . import parameter_sampling as sample
 import numpy as np
 from typing import Set
 
@@ -111,16 +112,7 @@ class V1G(GeneralDER):
         Returns:
             V1G instance with example parameters
         """
-        # Timing parameters
-        a = np.random.randint(T-1)
-        d = np.random.randint(a+1,T)  # Departure at 7am (or T if shorter horizon)
-
-        # Power and energy parameters
-        u_max = np.random.uniform(10) # 
-        connected_time = d-a
-        e_max = np.random.uniform(connected_time*u_max)  # Maximum 53.3kWh (80% of 66.6kWh battery)
-        e_min = np.random.uniform(e_max)  # Minimum 20kWh (30% of 66.6kWh battery)
-
+        a, d, u_max, e_min, e_max = sample.v1g(T)
         return cls(T=T, a=a, d=d, u_max=u_max, e_min=e_min, e_max=e_max)
 
 
@@ -161,8 +153,5 @@ class E1S(V1G):
         Returns:
             E1S instance with example parameters
         """
-        u_max = np.random.uniform(10) # 
-        x_max = np.random.uniform(T*u_max)  
-        x_min = np.random.uniform(x_max)  
-
+        u_max, x_min, x_max = sample.e1s()
         return cls(u_max=u_max, x_min=x_min, x_max=x_max, T=T)
