@@ -45,7 +45,6 @@ def v1g(T):
     return a, d, u_max, e_min, e_max
 
 def v2g(T):
-    print('dd')
     u_min = U_MIN_BOUND*np.random.uniform()
     u_max = U_MAX_BOUND*np.random.uniform() 
     x_max = X_MAX_BOUND*np.random.uniform()
