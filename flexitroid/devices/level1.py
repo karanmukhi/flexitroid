@@ -64,10 +64,14 @@ class V1G(GeneralDER):
         self.active = set(range(a, d))
 
     def _get_major(self, u_max: float, e_max: float, a: int, d: int) -> np.ndarray:
-        major = np.zeros(shape=(d - a))
+        connected_time = (d - a)
+        major = np.zeros(shape=connected_time)
         full_power_time = int(e_max // u_max)
-        major[:full_power_time] = u_max
-        major[full_power_time] = e_max % u_max
+        if full_power_time >= connected_time:
+            major += u_max
+        else:
+            major[:full_power_time] = u_max
+            major[full_power_time] = e_max % u_max
         return major
 
     def b(self, A: Set[int]) -> float:
