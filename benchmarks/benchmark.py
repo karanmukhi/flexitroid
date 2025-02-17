@@ -1,0 +1,100 @@
+from abc import ABC, abstractmethod
+import cvxpy as cp
+import numpy as np
+
+
+class Benchmark(ABC):
+    """Abstract base class for benchmarks.
+
+    This class defines the common interface that all benchmark implementations
+    must follow. It provides a standardized way to run benchmarks, collect metrics,
+    and report results.
+    """
+
+    def __init__(self, name: str, population_params, T: int, N: int):
+        """Initialize the benchmark with a name."""
+        self.name = name
+        self.population_params = population_params
+        self.T = T
+        self.N = N
+
+    @abstractmethod
+    def solve_lp(self) -> None:
+        pass
+
+    @abstractmethod
+    def solve_qp(self) -> None:
+        pass
+
+    @abstractmethod
+    def solve_l_inf(self) -> None:
+        pass
+
+class InnerApproximation(Benchmark):
+    """Abstract base class for benchmarks.
+
+    This class defines the common interface that all benchmark implementations
+    must follow. It provides a standardized way to run benchmarks, collect metrics,
+    and report results.
+    """
+    def __init__(self, name: str, population_params: dict, T: int, N: int):
+        """Initialize the benchmark with a name."""
+        super().__init__(name, population_params, T, N)
+        self.A = None
+        self.b = None
+
+    @property
+    def A_b(self):
+        if self.A is None or self.b is None:
+            self.A, self.b = self.compute_A_b()
+        return self.A, self.b
+        
+    @abstractmethod
+    def compute_A_b(self):
+        pass
+
+    def compute_unaggregatedA_b(self):
+        ...
+    
+    def solve_lp(self, c, A=None, b=None) -> None:
+        A_approx, b_approx = self.A_b
+        if A is not None and b is not None:
+            A = np.vstack([A, A_approx])
+            b = np.hstack([b, b_approx])
+        else:
+            A = A_approx
+            b = b_approx
+        x = cp.Variable(self.T)
+        constraints = [A @ x <= b]
+        objective = cp.Minimize(c @ x)
+        prob = cp.Problem(objective, constraints)
+        prob.solve()
+        self.lp = prob
+        self.lp_x = x.value
+        return self.lp_x
+
+
+    def solve_qp(self, Q, c) -> None:
+        A_approx, b_approx = self.A_b
+        x = cp.Variable(self.T)
+        constraints = [A_approx @ x <= b_approx]
+        objective = cp.Minimize(0.5*cp.quad_form(x, Q) + c @ x)
+        prob = cp.Problem(objective, constraints)
+        prob.solve()
+        self.qp = prob
+        self.qp_x = x.value
+
+    def solve_l_inf(self) -> None:
+        A_approx, b_approx = self.A_b
+        x = cp.Variable(self.T)
+        t = cp.Variable(nonneg=True)
+        constraints = [A_approx @ x <= b_approx, x <= t, -x <= t]
+        objective = cp.Minimize(t)
+        prob = cp.Problem(objective, constraints)
+        prob.solve()
+        self.l_inf = prob
+        self.l_inf_x = x.value
+        self.l_inf_t = t.value
+        return self.l_inf_x
+
+
