@@ -5,7 +5,7 @@ import flexitroid.problems.linear as lin
 import flexitroid.problems.l_inf as linf
 import flexitroid.problems.quadratic as qp
 
-def test_LP(T=5, n_tests=10):
+def test_LP(T=5):
     A = np.eye(T)
     b = np.random.uniform(size=T)
     c = -np.random.uniform(-1,1,size=T)
@@ -31,7 +31,6 @@ def test_QP(T=50):
     q = np.random.uniform(T)
     Q = q*np.eye(T)
     c = np.random.randn(T)
-    
     x = solve_QP(Q, c, A, b)
     prob = qp.QuadraticProgram(X, Q, c, 1000)
     prob.solve()

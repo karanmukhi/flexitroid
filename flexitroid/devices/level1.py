@@ -1,5 +1,5 @@
 from .general_der import GeneralDER, DERParameters
-from . import parameter_sampling as sample
+import flexitroid.utils.device_sampling as sample
 import numpy as np
 from typing import Set
 
@@ -42,8 +42,8 @@ class V1G(GeneralDER):
         u_max_arr[a:d] = u_max
 
         # Create SoC bound arrays with different constraints before/after departure
-        x_min_arr = np.full(T, -np.inf)  # Initialize with no constraints
-        x_max_arr = np.full(T, np.inf)  # Initialize with no constraints
+        x_min_arr = np.full(T, 0)  # Initialize with no constraints
+        x_max_arr = np.full(T, np.sum(u_max_arr))  # Initialize with no constraints
 
         # Set SoC bounds after departure
         x_min_arr[d - 1 :] = e_min

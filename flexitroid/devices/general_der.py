@@ -7,7 +7,7 @@ including individual flexibility sets and their Minkowski sums.
 from dataclasses import dataclass
 from typing import Set
 import numpy as np
-from . import parameter_sampling as sample
+import flexitroid.utils.device_sampling as sample
 from flexitroid.flexitroid import Flexitroid
 
 
@@ -61,21 +61,22 @@ class GeneralDER(Flexitroid):
     def T(self) -> int:
         return self._T
 
-    @property
-    def A_b(self) -> np.ndarray:
+    
+    def A_b(self, remove_redundant=True) -> np.ndarray:
         A = np.vstack(
-            [-np.eye(self.T), np.eye(self.T), -np.tri(self.T), np.tri(self.T)]
+            [np.eye(self.T),-np.eye(self.T), np.tri(self.T), -np.tri(self.T)]
         )
         b = np.concatenate(
             [
-                -self.params.u_min,
                 self.params.u_max,
-                -self.params.x_min,
+                -self.params.u_min,
                 self.params.x_max,
+                -self.params.x_min,
             ]
         )
-        A = A[np.isfinite(b)]
-        b = b[np.isfinite(b)]
+        if remove_redundant:
+            A = A[np.isfinite(b)]
+            b = b[np.isfinite(b)]
         return A, b
 
 

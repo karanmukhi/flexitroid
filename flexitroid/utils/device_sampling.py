@@ -1,11 +1,12 @@
 import numpy as np
-
+from dataclasses import dataclass
 U_MAX_BOUND = 1
 U_MIN_BOUND = -1
 X_MAX_BOUND = 10
 X_MIN_BOUND = -10
 assert U_MAX_BOUND > U_MIN_BOUND
 assert X_MAX_BOUND > X_MIN_BOUND
+
 
 def der(T):
     u_min = U_MIN_BOUND*np.random.uniform(size=T)
@@ -14,7 +15,7 @@ def der(T):
     x_min = X_MIN_BOUND*np.random.uniform(size=T)
     return u_min, u_max, x_min, x_max
 
-def generation(T):
+def pv(T):
     rated_power = U_MAX_BOUND*np.random.uniform()  # 5kW rated power
     # Create sinusoidal generation profile peaking at midday
     t = np.linspace(0, 2 * np.pi, T)
@@ -26,7 +27,7 @@ def generation(T):
     return u_min, u_max
 
 
-def e1s():
+def e1s(T):
     u_max = U_MAX_BOUND*np.random.uniform() 
     x_max = X_MAX_BOUND*np.random.uniform()
     x_min = 0
@@ -35,7 +36,7 @@ def e1s():
 def v1g(T):
     u_max = U_MAX_BOUND*np.random.uniform() 
     a = np.random.randint(T-1)
-    d = np.random.randint(a+1,T)
+    d = np.random.randint(a+1,T+1)
 
     connected_time = d-a
 
@@ -48,23 +49,27 @@ def v2g(T):
     u_min = U_MIN_BOUND*np.random.uniform()
     u_max = U_MAX_BOUND*np.random.uniform() 
     x_max = X_MAX_BOUND*np.random.uniform()
-    x_min = X_MIN_BOUND*np.random.uniform()
+    x_min = 0
 
     # Timing parameters
     a = np.random.randint(T-1)
-    d = np.random.randint(a+1,T)
+    d = np.random.randint(a+1,T+1)
+
+    # a = 0
+    # d = T
     connected_time = d-a
 
-    e_max = np.minimum(connected_time*u_max*np.random.uniform(), x_max)
-    e_min = np.random.uniform(0, e_max)
+    e_max = x_max
+    e_min = np.random.uniform(0, np.minimum(e_max, connected_time*u_max))
 
     return a, d, u_min, u_max, x_min, x_max, e_min, e_max
 
-def e2s():
+def e2s(T):
     # Power parameters (kW)
     u_min = U_MIN_BOUND*np.random.uniform()
     u_max = U_MAX_BOUND*np.random.uniform()  # Can charge up to 2kW
     x_max = X_MAX_BOUND*np.random.uniform()
     x_min = X_MIN_BOUND*np.random.uniform()
     return u_min, u_max, x_min, x_max
+
 

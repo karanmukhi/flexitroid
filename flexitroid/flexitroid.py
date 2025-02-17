@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Set, Optional, TypeVar, Generic
 import numpy as np
 from itertools import permutations
-
+from flexitroid.problems import l_inf
 
 class Flexitroid(ABC):
     """Abstract base class for flexiblity of DERs and aggregations of DERS.
@@ -88,3 +88,9 @@ class Flexitroid(ABC):
         perms = np.array(perms).reshape(-1,self.T)
         V = np.array([self.solve_linear_program(c) for c in perms])
         return V
+    
+
+    def solve_l_inf(self):
+        problem = l_inf.L_inf(self)
+        problem.solve()
+        return problem.solution

@@ -1,5 +1,5 @@
 from .general_der import GeneralDER, DERParameters
-from . import parameter_sampling as sample
+import flexitroid.utils.device_sampling as sample
 import numpy as np
 from typing import Set
 
@@ -11,14 +11,13 @@ class PV(GeneralDER):
     curtailment capabilities but no energy storage.
     """
 
-    def __init__(self, u_min: np.ndarray, u_max: np.ndarray):
+    def __init__(self, T:int, u_min: np.ndarray, u_max: np.ndarray):
         """Initialize PV flexibility set with power bounds only.
 
         Args:
             u_min: Lower bound on power consumption for each timestep.
             u_max: Upper bound on power consumption for each timestep.
         """
-        T = len(u_min)
         assert len(u_max) == T, "Power bounds must have same length"
         assert np.all(u_min <= u_max), "Invalid power bounds"
 
@@ -26,8 +25,8 @@ class PV(GeneralDER):
         params = DERParameters(
             u_min=u_min,
             u_max=u_max,
-            x_min=np.full(T, -np.inf),
-            x_max=np.full(T, np.inf),
+            x_min=np.full(T, np.sum(u_min)),
+            x_max=np.full(T, np.sum(u_max)),
         )
         super().__init__(params)
 
@@ -66,5 +65,5 @@ class PV(GeneralDER):
         Returns:
             PV instance with example parameters
         """
-        u_min, u_max = sample.generation(T)
-        return cls(u_min=u_min, u_max=u_max)
+        u_min, u_max = sample.pv(T)
+        return cls(T, u_min=u_min, u_max=u_max)

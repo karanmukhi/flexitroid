@@ -1,9 +1,13 @@
 import numpy as np
 import cvxpy as cp
-from flexitroid.flexitroid import Flexitroid
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from flexitroid.flexitroid import Flexitroid
+
 
 class L_inf():
-    def __init__(self, feasible_set: Flexitroid):
+    def __init__(self, feasible_set):
         """Initialize the linear program with Dantzig-Wolfe decomposition.
         
         Args:
