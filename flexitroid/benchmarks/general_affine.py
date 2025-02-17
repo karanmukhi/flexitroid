@@ -1,7 +1,7 @@
 import numpy as np
 import cvxpy as cp
 from scipy.linalg import block_diag
-from benchmark import InnerApproximation
+from flexitroid.benchmarks.benchmark import InnerApproximation
 
 class GeneralAffine(InnerApproximation):
     def __init__(self, population_params, T: int, N: int):
