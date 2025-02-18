@@ -2,20 +2,19 @@ import numpy as np
 import cvxpy as cp
 from scipy.linalg import block_diag
 from flexitroid.benchmarks.benchmark import InnerApproximation
+from flexitroid.utils.population_sampling import PopulationGenerator
 
 
 class GeneralAffine(InnerApproximation):
-    def __init__(self, population_params, T: int, N: int):
+    def __init__(self, population: PopulationGenerator):
         name = "general_affine"
-        self.T = T
-        self.N = N
-        super().__init__(name, population_params, T, N)
+        super().__init__(name, population)
 
     def compute_A_b(self):
         N = self.N
         T = self.T
 
-        bi = self.population_params.calculate_indiv_sets()
+        bi = self.population.calculate_indiv_sets()
         hx = np.sum(bi, axis=1) / N  # shape: (4*T,)
 
         L = np.tril(np.ones((T, T)))

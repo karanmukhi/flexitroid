@@ -8,36 +8,9 @@ from dataclasses import dataclass
 from typing import Set
 import numpy as np
 import flexitroid.utils.device_sampling as sample
+from flexitroid.utils.device_sampling import DERParameters
 from flexitroid.flexitroid import Flexitroid
 
-
-@dataclass
-class DERParameters:
-    """Parameters defining a DER's flexibility.
-
-    Args:
-        u_min: Lower bound on power consumption for each timestep.
-        u_max: Upper bound on power consumption for each timestep.
-        x_min: Lower bound on state of charge for each timestep.
-        x_max: Upper bound on state of charge for each timestep.
-    """
-
-    u_min: np.ndarray
-    u_max: np.ndarray
-    x_min: np.ndarray
-    x_max: np.ndarray
-
-    def __str__(self):
-        return "sss"
-
-    def __post_init__(self):
-        """Validate parameter dimensions and constraints."""
-        T = len(self.u_min)
-        assert len(self.u_max) == T, "Power bounds must have same length"
-        assert len(self.x_min) == T, "SoC bounds must have same length"
-        assert len(self.x_max) == T, "SoC bounds must have same length"
-        assert np.all(self.u_min <= self.u_max), "Invalid power bounds"
-        assert np.all(self.x_min <= self.x_max), "Invalid SoC bounds"
 
 
 class GeneralDER(Flexitroid):
@@ -229,7 +202,5 @@ class GeneralDER(Flexitroid):
         Returns:
             GeneralDER instance with example parameters
         """
-        u_min, u_max, x_min, x_max = sample.der(T)
-
-        params = DERParameters(u_min=u_min, u_max=u_max, x_min=x_min, x_max=x_max)
+        params = sample.der(T)
         return cls(params)

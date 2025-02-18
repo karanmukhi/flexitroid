@@ -1,5 +1,6 @@
 from .general_der import GeneralDER, DERParameters
 import flexitroid.utils.device_sampling as sample
+from flexitroid.utils.device_sampling import DERParameters
 import numpy as np
 from typing import Set
 
@@ -48,7 +49,6 @@ class V1G(GeneralDER):
         # Set SoC bounds after departure
         x_max_arr[d - 1 :] = e_max
         x_min_arr[d - 1 :] = e_min
-        print("dd  ")
         # Initialize parent class with constructed parameter arrays
         params = DERParameters(
             u_min=u_min_arr, u_max=u_max_arr, x_min=x_min_arr, x_max=x_max_arr
@@ -127,7 +127,7 @@ class E1S(V1G):
     energy storage system with unidirectional power flow (charging only).
     """
 
-    def __init__(self, u_max: float, x_min: float, x_max: float, T: int):
+    def __init__(self, T: int, u_max: float, x_min: float, x_max: float):
         """Initialize E1S flexibility set with constant power and energy bounds.
 
         Args:

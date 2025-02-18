@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import cvxpy as cp
 import numpy as np
+from flexitroid.utils.population_sampling import PopulationGenerator
+
 
 
 class Benchmark(ABC):
@@ -11,12 +13,12 @@ class Benchmark(ABC):
     and report results.
     """
 
-    def __init__(self, name: str, population_params, T: int, N: int):
+    def __init__(self, name: str, population: PopulationGenerator):
         """Initialize the benchmark with a name."""
         self.name = name
-        self.population_params = population_params
-        self.T = T
-        self.N = N
+        self.population = population
+        self.T = population.T
+        self.N = population.N
 
     @abstractmethod
     def solve_lp(self) -> None:
@@ -39,9 +41,9 @@ class InnerApproximation(Benchmark):
     and report results.
     """
 
-    def __init__(self, name: str, population_params: dict, T: int, N: int):
+    def __init__(self, name: str, population: PopulationGenerator):
         """Initialize the benchmark with a name."""
-        super().__init__(name, population_params, T, N)
+        super().__init__(name, population)
         self.A = None
         self.b = None
 

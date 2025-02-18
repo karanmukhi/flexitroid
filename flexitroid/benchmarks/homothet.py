@@ -1,15 +1,13 @@
 import cvxpy as cp
 import numpy as np
-
+from flexitroid.utils.population_sampling import PopulationGenerator
 from flexitroid.benchmarks.benchmark import InnerApproximation
 
 
 class HomothetProjection(InnerApproximation):
-    def __init__(self, population_params, T: int, N: int):
+    def __init__(self, population: PopulationGenerator):
         name = "homothet_projection"
-        self.T = T
-        self.N = N
-        super().__init__(name, population_params, T, N)
+        super().__init__(name, population)
         self.A_exact = self.get_A_exact()
         self.b_exact = self.get_b_exact()
 
@@ -21,7 +19,7 @@ class HomothetProjection(InnerApproximation):
 
     def get_b_exact(self):
         T = self.T
-        b_raw = self.population_params.calculate_indiv_sets().T
+        b_raw = self.population.calculate_indiv_sets().T
         u_max = b_raw[:, :T]
         minus_u_min = b_raw[:, T : 2 * T]
         x_max = b_raw[:, 2 * T : 3 * T]

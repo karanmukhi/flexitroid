@@ -38,6 +38,7 @@ class PopulationGenerator:
         )
 
         self.device_list = self.get_all_devices()
+        self.N = len(self.device_list)
 
     def get_all_devices(self) -> List:
         """Get all devices from all populations in a single list.
@@ -93,7 +94,7 @@ class PopulationGenerator:
 
         if der_count > 0:
             populations["der"] = [
-                GeneralDER(self.T, *sample.pv(self.T)) for _ in range(der_count)
+                GeneralDER(sample.der(self.T)) for _ in range(der_count)
             ]
 
         if v1g_count > 0:

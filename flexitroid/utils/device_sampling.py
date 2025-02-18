@@ -14,7 +14,8 @@ def der(T):
     u_max = U_MAX_BOUND * np.random.uniform(size=T)  # Can charge up to 2kW
     x_max = X_MAX_BOUND * np.random.uniform(size=T)
     x_min = X_MIN_BOUND * np.random.uniform(size=T)
-    return u_min, u_max, x_min, x_max
+    params = DERParameters(u_min=u_min, u_max=u_max, x_min=x_min, x_max=x_max)
+    return params
 
 
 def pv(T):
@@ -78,3 +79,33 @@ def e2s(T):
     x_max = X_MAX_BOUND * np.random.uniform()
     x_min = X_MIN_BOUND * np.random.uniform()
     return u_min, u_max, x_min, x_max
+
+
+@dataclass
+class DERParameters:
+    """Parameters defining a DER's flexibility.
+
+    Args:
+        u_min: Lower bound on power consumption for each timestep.
+        u_max: Upper bound on power consumption for each timestep.
+        x_min: Lower bound on state of charge for each timestep.
+        x_max: Upper bound on state of charge for each timestep.
+    """
+
+    u_min: np.ndarray
+    u_max: np.ndarray
+    x_min: np.ndarray
+    x_max: np.ndarray
+
+    def __str__(self):
+        return "sss"
+
+    def __post_init__(self):
+        """Validate parameter dimensions and constraints."""
+        T = len(self.u_min)
+        assert len(self.u_max) == T, "Power bounds must have same length"
+        assert len(self.x_min) == T, "SoC bounds must have same length"
+        assert len(self.x_max) == T, "SoC bounds must have same length"
+        assert np.all(self.u_min <= self.u_max), "Invalid power bounds"
+        assert np.all(self.x_min <= self.x_max), "Invalid SoC bounds"
+
