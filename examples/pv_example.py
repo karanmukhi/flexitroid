@@ -1,5 +1,5 @@
 import numpy as np
-from flexitroid.devices.generation import PV
+from flexitroid.devices.pv import PV
 
 # Create a time horizon of 24 hours
 T = 24

@@ -11,7 +11,7 @@ class PV(GeneralDER):
     curtailment capabilities but no energy storage.
     """
 
-    def __init__(self, T:int, u_min: np.ndarray, u_max: np.ndarray):
+    def __init__(self, T: int, u_min: np.ndarray, u_max: np.ndarray):
         """Initialize PV flexibility set with power bounds only.
 
         Args:

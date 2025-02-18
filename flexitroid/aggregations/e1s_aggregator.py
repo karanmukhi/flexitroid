@@ -16,7 +16,7 @@ class E1SAggregator(Flexitroid, Generic[D]):
     """Generic aggregator for device flexibility sets.
 
     This class implements the aggregate flexibility set F(Ξₙ) as the Minkowski
-    sum of individual flexibility sets, represented as a g-polymatroid for a set of 
+    sum of individual flexibility sets, represented as a g-polymatroid for a set of
     E1S devices.
     """
 

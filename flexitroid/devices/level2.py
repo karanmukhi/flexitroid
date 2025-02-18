@@ -78,7 +78,6 @@ class V2G(GeneralDER):
         self.e_max = e_max
         self.active = set(range(a, d))
 
-
     @classmethod
     def example(cls, T: int = 24) -> "V2G":
         """Create an example V2G (bidirectional EV) with typical parameters.
@@ -117,7 +116,7 @@ class E2S(GeneralDER):
     energy storage system with bidirectional power flow.
     """
 
-    def __init__(self,  T: int, u_min: float, u_max: float, x_min: float, x_max: float):
+    def __init__(self, T: int, u_min: float, u_max: float, x_min: float, x_max: float):
         """Initialize ESS flexibility set with constant power and energy bounds.
 
         Args:
@@ -166,5 +165,5 @@ class E2S(GeneralDER):
         x_min = capacity * soc_min  # 5kWh minimum
         x_max = capacity * soc_max  # 45kWh maximum
 
-        u_min, u_max, x_min, x_max = sample.e2s()
+        u_min, u_max, x_min, x_max = sample.e2s(T)
         return cls(T=T, u_min=u_min, u_max=u_max, x_min=x_min, x_max=x_max)

@@ -3,9 +3,10 @@ import numpy as np
 
 from flexitroid.benchmarks.benchmark import InnerApproximation
 
+
 class HomothetProjection(InnerApproximation):
     def __init__(self, population_params, T: int, N: int):
-        name = 'homothet_projection'
+        name = "homothet_projection"
         self.T = T
         self.N = N
         super().__init__(name, population_params, T, N)
@@ -14,16 +15,17 @@ class HomothetProjection(InnerApproximation):
 
     def get_A_exact(self):
         T = self.T
-        return np.vstack([-np.eye(T), np.eye(T), np.tril(np.ones((T, T))), -np.tril(np.ones((T, T)))])
-    
+        return np.vstack(
+            [-np.eye(T), np.eye(T), np.tril(np.ones((T, T))), -np.tril(np.ones((T, T)))]
+        )
+
     def get_b_exact(self):
         T = self.T
         b_raw = self.population_params.calculate_indiv_sets().T
-        i=0
-        u_max = b_raw[:,:T]
-        minus_u_min = b_raw[:,T:2*T]
-        x_max = b_raw[:,2*T:3*T]
-        minus_x_min = b_raw[:,3*T:4*T]
+        u_max = b_raw[:, :T]
+        minus_u_min = b_raw[:, T : 2 * T]
+        x_max = b_raw[:, 2 * T : 3 * T]
+        minus_x_min = b_raw[:, 3 * T : 4 * T]
         b = np.hstack([minus_u_min, u_max, x_max, minus_x_min]).T
         return b
 
@@ -32,7 +34,7 @@ class HomothetProjection(InnerApproximation):
         b = self.b_exact
         b_list = list(b.T)
 
-        B,b_p = getAbProjection(A, b_list)
+        B, b_p = getAbProjection(A, b_list)
         """
         b_1 = np.ones(T)*(-np.mean(batts["x_min"]))
         b_2 = np.ones(T)*(np.mean(batts["x_max"]))
@@ -40,39 +42,49 @@ class HomothetProjection(InnerApproximation):
         b_4 = np.ones(T)*(np.mean(batts["S_0"])/dt)
         H = np.concatenate((b_1,b_2,b_3,b_4))
         """
-        H = np.mean(b_list,axis=0)
+        H = np.mean(b_list, axis=0)
 
-        beta,t = fitHomothetProjectionLinDescisionRule(A,H,B,b_p,self.T,self.N)
-        b_approx = beta*H + A@t
+        beta, t = fitHomothetProjectionLinDescisionRule(A, H, B, b_p, self.T, self.N)
+        b_approx = beta * H + A @ t
         A_approx = A
         return A_approx, b_approx
-    
 
-def getAbProjection(A,b_list): # gives the half-sapace representation of implicit M-sum
+
+def getAbProjection(
+    A, b_list
+):  # gives the half-sapace representation of implicit M-sum
     A_barot_list = []
     A_barot = A
-    for i in range(1,len(b_list)):
-        A_barot = np.concatenate([A_barot,-A],axis=1)
+    for i in range(1, len(b_list)):
+        A_barot = np.concatenate([A_barot, -A], axis=1)
     A_barot_list.append(A_barot)
 
-    A_barot = np.concatenate([np.zeros([np.shape(A)[0],np.shape(A)[1]]),A],axis=1)
-    A_barot = np.concatenate([A_barot,np.zeros((np.shape(A)[0],(len(b_list)-2)*np.shape(A)[1]))],axis=1)
+    A_barot = np.concatenate([np.zeros([np.shape(A)[0], np.shape(A)[1]]), A], axis=1)
+    A_barot = np.concatenate(
+        [A_barot, np.zeros((np.shape(A)[0], (len(b_list) - 2) * np.shape(A)[1]))],
+        axis=1,
+    )
     A_barot_list.append(A_barot)
-    for i in range(1,len(b_list)-1):
-        A_barot = np.zeros((np.shape(A)[0],(i+1)*np.shape(A)[1]))
-        A_barot = np.concatenate([A_barot,A], axis=1)
-        A_barot = np.concatenate([A_barot,np.zeros((np.shape(A)[0],(len(b_list)-i-2)*np.shape(A)[1]))],axis=1)
+    for i in range(1, len(b_list) - 1):
+        A_barot = np.zeros((np.shape(A)[0], (i + 1) * np.shape(A)[1]))
+        A_barot = np.concatenate([A_barot, A], axis=1)
+        A_barot = np.concatenate(
+            [
+                A_barot,
+                np.zeros((np.shape(A)[0], (len(b_list) - i - 2) * np.shape(A)[1])),
+            ],
+            axis=1,
+        )
         A_barot_list.append(A_barot)
-    
+
     A_barot = A_barot_list[0]
-    for i in range(1,len(A_barot_list)):
-        A_barot = np.concatenate([A_barot,A_barot_list[i]],axis=0)
+    for i in range(1, len(A_barot_list)):
+        A_barot = np.concatenate([A_barot, A_barot_list[i]], axis=0)
 
     b_barot = b_list[-1]
-    for i in range(0,len(b_list)-1):
-        b_barot = np.concatenate([b_barot,b_list[i]])
-    return A_barot,b_barot
-
+    for i in range(0, len(b_list) - 1):
+        b_barot = np.concatenate([b_barot, b_list[i]])
+    return A_barot, b_barot
 
 
 def fitHomothetProjectionLinDescisionRule(F, H, B, c, T, N):
@@ -114,7 +126,7 @@ def fitHomothetProjectionLinDescisionRule(F, H, B, c, T, N):
 
     # Objective: minimize s
     objective = cp.Minimize(s)
-    
+
     # Define and solve the problem
     prob = cp.Problem(objective, constraints)
     prob.solve()  # Optionally, pass a solver argument, e.g., solver=cp.GUROBI if available
@@ -137,7 +149,7 @@ def fitHomothetProjectionLinDescisionRule(F, H, B, c, T, N):
 #     aux = model.addMVar(shape = rows_B,lb=-gp.GRB.INFINITY)
 #     aux_IW = model.addMVar(shape = (T*N,T),lb=-gp.GRB.INFINITY)
 #     aux_rV = model.addMVar(shape = T*N,lb=-gp.GRB.INFINITY)
-    
+
 #     model.setObjective(s,gp.GRB.MINIMIZE)
 #     model.addConstrs(aux_IW[i,j] == I[i,j] for i in range(T) for j in range(T))
 #     model.addConstr(aux_rV[0:T] == r)
@@ -146,7 +158,7 @@ def fitHomothetProjectionLinDescisionRule(F, H, B, c, T, N):
 #         model.addConstrs(G[i,:]@F[:,j] == B[i,:]@aux_IW[:,j] for j in range(T))
 #     model.addConstrs(aux[i] == gp.quicksum(G[i,k]*H[k] for k in range(4*T)) for i in range(rows_B))
 #     model.addConstr(aux <= c.reshape(rows_B,1)@s + B@aux_rV)
-#     model.optimize()    
+#     model.optimize()
 #     beta = 1/s.X
 #     t = -r.X[0:T]/s.X
 #     return beta,t

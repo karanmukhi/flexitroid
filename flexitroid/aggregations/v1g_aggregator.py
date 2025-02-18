@@ -16,7 +16,7 @@ class V1GAggregator(Flexitroid, Generic[D]):
     """Generic aggregator for device flexibility sets.
 
     This class implements the aggregate flexibility set F(Ξₙ) as the Minkowski
-    sum of individual flexibility sets, represented as a g-polymatroid for a set of 
+    sum of individual flexibility sets, represented as a g-polymatroid for a set of
     V1G devices.
     """
 
@@ -41,9 +41,9 @@ class V1GAggregator(Flexitroid, Generic[D]):
         minor = {}
         for device in devices:
             a, d = device.a, device.d
-            key = (a,d)
-            major[key] = major.get(key, np.zeros(d-a)) + device.major
-            minor[key] = minor.get(key, np.zeros(d-a)) + device.minor
+            key = (a, d)
+            major[key] = major.get(key, np.zeros(d - a)) + device.major
+            minor[key] = minor.get(key, np.zeros(d - a)) + device.minor
 
         self._major = major
         self._minor = minor
@@ -90,4 +90,3 @@ class V1GAggregator(Flexitroid, Generic[D]):
             on_time = len(active_intersection)
             result += np.sum(agg_dict[key][:on_time])
         return result
-

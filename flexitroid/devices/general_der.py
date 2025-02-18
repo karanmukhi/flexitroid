@@ -28,7 +28,7 @@ class DERParameters:
     x_max: np.ndarray
 
     def __str__(self):
-        return 'sss'
+        return "sss"
 
     def __post_init__(self):
         """Validate parameter dimensions and constraints."""
@@ -61,10 +61,9 @@ class GeneralDER(Flexitroid):
     def T(self) -> int:
         return self._T
 
-    
     def A_b(self, remove_redundant=True) -> np.ndarray:
         A = np.vstack(
-            [np.eye(self.T),-np.eye(self.T), np.tri(self.T), -np.tri(self.T)]
+            [np.eye(self.T), -np.eye(self.T), np.tri(self.T), -np.tri(self.T)]
         )
         b = np.concatenate(
             [
@@ -78,7 +77,6 @@ class GeneralDER(Flexitroid):
             A = A[np.isfinite(b)]
             b = b[np.isfinite(b)]
         return A, b
-
 
     def b(self, A: Set[int]) -> float:
         A_c = self.active - A
@@ -106,7 +104,6 @@ class GeneralDER(Flexitroid):
                 ]
             )
         return b
-
 
     def p(self, A: Set[int]) -> float:
         A_c = self.active - A

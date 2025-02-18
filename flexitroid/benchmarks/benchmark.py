@@ -30,6 +30,7 @@ class Benchmark(ABC):
     def solve_l_inf(self) -> None:
         pass
 
+
 class InnerApproximation(Benchmark):
     """Abstract base class for benchmarks.
 
@@ -37,6 +38,7 @@ class InnerApproximation(Benchmark):
     must follow. It provides a standardized way to run benchmarks, collect metrics,
     and report results.
     """
+
     def __init__(self, name: str, population_params: dict, T: int, N: int):
         """Initialize the benchmark with a name."""
         super().__init__(name, population_params, T, N)
@@ -48,14 +50,14 @@ class InnerApproximation(Benchmark):
         if self.A is None or self.b is None:
             self.A, self.b = self.compute_A_b()
         return self.A, self.b
-        
+
     @abstractmethod
     def compute_A_b(self):
         pass
 
     def compute_unaggregatedA_b(self):
         ...
-    
+
     def solve_lp(self, c, A=None, b=None) -> None:
         A_approx, b_approx = self.A_b
         if A is not None and b is not None:
@@ -73,12 +75,11 @@ class InnerApproximation(Benchmark):
         self.lp_x = x.value
         return self.lp_x
 
-
     def solve_qp(self, Q, c) -> None:
         A_approx, b_approx = self.A_b
         x = cp.Variable(self.T)
         constraints = [A_approx @ x <= b_approx]
-        objective = cp.Minimize(0.5*cp.quad_form(x, Q) + c @ x)
+        objective = cp.Minimize(0.5 * cp.quad_form(x, Q) + c @ x)
         prob = cp.Problem(objective, constraints)
         prob.solve()
         self.qp = prob
@@ -96,5 +97,3 @@ class InnerApproximation(Benchmark):
         self.l_inf_x = x.value
         self.l_inf_t = t.value
         return self.l_inf_x
-
-

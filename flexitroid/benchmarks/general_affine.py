@@ -3,9 +3,10 @@ import cvxpy as cp
 from scipy.linalg import block_diag
 from flexitroid.benchmarks.benchmark import InnerApproximation
 
+
 class GeneralAffine(InnerApproximation):
     def __init__(self, population_params, T: int, N: int):
-        name = 'general_affine'
+        name = "general_affine"
         self.T = T
         self.N = N
         super().__init__(name, population_params, T, N)
@@ -16,16 +17,15 @@ class GeneralAffine(InnerApproximation):
 
         bi = self.population_params.calculate_indiv_sets()
         hx = np.sum(bi, axis=1) / N  # shape: (4*T,)
-        
 
         L = np.tril(np.ones((T, T)))
         Linv = np.linalg.inv(L)
         H = np.vstack([Linv, -Linv, np.eye(T), -np.eye(T)])
 
         Hi_list = [H for _ in range(N)]
-        Hy = block_diag(*Hi_list)   # shape: (4*T*N, T*N)
+        Hy = block_diag(*Hi_list)  # shape: (4*T*N, T*N)
         check_feasible(Hy, bi, T, N)
-        
+
         P = np.zeros((T, T))
         pbar_ga = np.zeros(T)
         for h_i in bi.T:
@@ -33,28 +33,30 @@ class GeneralAffine(InnerApproximation):
             P += P_i
             pbar_ga += pbar_ga_i
 
-        A = H@np.linalg.inv(P)
-        b = hx + A@pbar_ga
-        A = A@L
+        A = H @ np.linalg.inv(P)
+        b = hx + A @ pbar_ga
+        A = A @ L
         return A, b
+
 
 def check_feasible(Hy, hIs, T, N):
     Y = np.hstack([np.eye(T) for _ in range(N)])  # shape: (T, T*N)
-    hy = hIs.flatten(order='F')  # shape: (4*T*N,)
+    hy = hIs.flatten(order="F")  # shape: (4*T*N,)
 
     u = cp.Variable(T)
     ui = cp.Variable(T * N)
 
     objective = cp.Maximize(cp.sum(u))
 
-    constraints = [
-        Y @ ui == u,
-        Hy @ ui <= hy
-    ]
+    constraints = [Y @ ui == u, Hy @ ui <= hy]
 
     prob = cp.Problem(objective, constraints)
     prob.solve()
-    assert prob.status in ['optimal', 'optimal_inaccurate'], f'Infeasible problem: {prob.status}'
+    assert prob.status in [
+        "optimal",
+        "optimal_inaccurate",
+    ], f"Infeasible problem: {prob.status}"
+
 
 def calculate_indiv_sets(a, d, x_init, x_fin, u_max, u_min, x_max, N, T):
     """
@@ -74,7 +76,7 @@ def calculate_indiv_sets(a, d, x_init, x_fin, u_max, u_min, x_max, N, T):
         C_min = np.zeros(T)
         R_max = np.zeros(T)
         R_min = np.zeros(T)
-        
+
         # Floor arrival and ceil departure (MATLAB uses 1-indexing; here we adjust accordingly)
         ai = int(np.floor(a[i]))
         di = int(np.ceil(d[i]))
@@ -85,11 +87,12 @@ def calculate_indiv_sets(a, d, x_init, x_fin, u_max, u_min, x_max, N, T):
         C_max[ai:] = x_max[i] - x_init[i]
         # For C_min, first set indices corresponding to t from a to d-1
         if di - 1 > ai:
-            C_min[ai:di - 1] = -x_init[i]
-        C_min[di - 1:] = x_fin[i] - x_init[i]
-        
+            C_min[ai : di - 1] = -x_init[i]
+        C_min[di - 1 :] = x_fin[i] - x_init[i]
+
         hi[:, i] = np.concatenate((R_max, -R_min, C_max, -C_min))
     return hi
+
 
 def general_affine_inner_approx(H, hx, hi):
     """
@@ -106,17 +109,17 @@ def general_affine_inner_approx(H, hx, hi):
     pbar = cp.Variable(T)
     Gamma_i = cp.Variable((T, T))
     gamma_i = cp.Variable(T)
-    Lambda_i = cp.Variable((4*T, 4*T), nonneg=True)
-    
+    Lambda_i = cp.Variable((4 * T, 4 * T), nonneg=True)
+
     constraints = [
         Y @ Gamma_i == P_var,
         Y @ gamma_i == pbar,
         Lambda_i @ H == H @ Gamma_i,
-        Lambda_i @ hx <= hi - H @ gamma_i
+        Lambda_i @ hx <= hi - H @ gamma_i,
     ]
-    
+
     objective = cp.Maximize(cp.trace(P_var))
     prob = cp.Problem(objective, constraints)
     prob.solve()
-    
+
     return P_var.value, pbar.value
