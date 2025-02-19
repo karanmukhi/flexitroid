@@ -33,12 +33,13 @@ class PopulationGenerator:
         if T <= 0:
             raise ValueError("Time horizon must be positive")
         self.T = T
-        self.poppulation = self.generate_population(
+        self.device_groups = self.generate_population(
             pv_count, der_count, v1g_count, e1s_count, e2s_count, v2g_count
         )
 
         self.device_list = self.get_all_devices()
         self.N = len(self.device_list)
+        self.device_types = ["pv", "der", "v1g", "e1s", "e2s", "v2g"]
 
     def get_all_devices(self) -> List:
         """Get all devices from all populations in a single list.
@@ -47,22 +48,16 @@ class PopulationGenerator:
             List of all devices across all device types.
         """
         all_devices = []
-        for devices in self.poppulation.values():
+        for devices in self.device_groups.values():
             all_devices.extend(devices)
         return all_devices
 
-    def calculate_indiv_sets(self):
-        arr = np.array([device.A_b(False)[1] for device in self.device_list]).T
-        large = (
-            np.max(arr[np.isfinite(arr)]) * self.T
-        )  # Adjust as necessary for your domain
-        small = (
-            np.min(arr[np.isfinite(arr)]) * self.T
-        )  # Adjust as necessary for your domain
-
-        # Replace positive and negative infinities accordingly.
-        arr[np.isposinf(arr)] = large
-        arr[np.isneginf(arr)] = small
+    def calculate_indiv_bs(self):
+        arr = np.array([device.A_b()[1] for device in self.device_list]).T
+        return arr
+    
+    def calculate_indiv_As(self):
+        arr = np.array([device.A_b()[0] for device in self.device_list]).T
         return arr
 
     def generate_population(
@@ -91,30 +86,42 @@ class PopulationGenerator:
             populations["pv"] = [
                 PV(self.T, *sample.pv(self.T)) for _ in range(pv_count)
             ]
+        else:
+            populations["pv"] = []
 
         if der_count > 0:
             populations["der"] = [
                 GeneralDER(sample.der(self.T)) for _ in range(der_count)
             ]
+        else:
+            populations["der"] = []
 
         if v1g_count > 0:
             populations["v1g"] = [
                 V1G(self.T, *sample.v1g(self.T)) for _ in range(v1g_count)
             ]
+        else:
+            populations["v1g"] = []
 
         if e1s_count > 0:
             populations["e1s"] = [
                 E1S(self.T, *sample.e1s(self.T)) for _ in range(e1s_count)
             ]
+        else:
+            populations["e1s"] = []
 
         if e2s_count > 0:
             populations["e2s"] = [
                 E2S(self.T, *sample.e2s(self.T)) for _ in range(e2s_count)
             ]
+        else:
+            populations["e2s"] = []
 
         if v2g_count > 0:
             populations["v2g"] = [
                 V2G(self.T, *sample.v2g(self.T)) for _ in range(v2g_count)
             ]
+        else:
+            populations["v2g"] = []
 
         return populations

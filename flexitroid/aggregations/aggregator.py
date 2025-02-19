@@ -4,35 +4,51 @@ This module implements the aggregation framework for DER flexibility sets,
 including the Minkowski sum of individual flexibility sets.
 """
 
-from typing import List, Set, TypeVar, Generic
+from typing import Set, TypeVar
 from flexitroid.flexitroid import Flexitroid
+from flexitroid.utils.population_sampling import PopulationGenerator
+from flexitroid.aggregations.pv_aggregator import PVAggregator
+from flexitroid.aggregations.v1g_aggregator import V1GAggregator
 
-D = TypeVar("D", bound=Flexitroid)
 
-
-class Aggregator(Flexitroid, Generic[D]):
+class Aggregator(Flexitroid):
     """Generic aggregator for device flexibility sets.
 
     This class implements the aggregate flexibility set F(Ξₙ) as the Minkowski
     sum of individual flexibility sets, represented as a g-polymatroid.
     """
 
-    def __init__(self, fleet: List[D]):
+    def __init__(self, population: PopulationGenerator):
         """Initialize the aggregate flexibility set.
 
         Args:
             fleet: List of fleet to aggregate.
         """
-        if not fleet:
+        if population.N == 0:
             raise ValueError("Must provide at least one device")
 
-        self.fleet = fleet
-        self._T = fleet[0].T
+        self.population = population
+        self._T = population.T
+        self.fleet = self.group_devices()
 
-        # Validate all fleet have same time horizon
-        for device in fleet[1:]:
-            if device.T != self.T:
-                raise ValueError("All fleet must have same time horizon")
+    def group_devices(self):
+        fleet = (
+            self.population.device_groups["der"]
+            + self.population.device_groups["e2s"]
+            + self.population.device_groups["v2g"]
+        )
+        pvs = self.population.device_groups["pv"]
+        if len(pvs) > 0:
+            pv_agg = PVAggregator(pvs)
+            fleet.append(pv_agg)
+        v1gs = (
+            self.population.device_groups["v1g"] + self.population.device_groups["e1s"]
+        )
+        if len(v1gs) > 0:
+            v1g_agg = V1GAggregator(v1gs)
+            fleet.append(v1g_agg)
+
+        return fleet
 
     @property
     def T(self) -> int:

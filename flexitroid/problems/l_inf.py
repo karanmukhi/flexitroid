@@ -1,9 +1,5 @@
 import numpy as np
 import cvxpy as cp
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from flexitroid.flexitroid import Flexitroid
 
 
 class L_inf:
@@ -23,6 +19,7 @@ class L_inf:
         self.lmda = None
         self.v_subset = None
         self.solution = None
+        self.value = None
 
     def solve(self):
         """Solve the linear program using Dantzig-Wolfe decomposition.
@@ -35,6 +32,7 @@ class L_inf:
             self.lmda = lmda
             self.v_subset = v_subset
             self.solution = lmda @ v_subset
+            self.value = np.max(self.solution)
 
     def dantzig_wolfe(self):
         v_subset = self.feasible_set.form_box()
@@ -55,7 +53,7 @@ class L_inf:
 
             objective = cp.Minimize(t)
             prob = cp.Problem(objective, constraints)
-            prob.solve()
+            prob.solve(solver=cp.GUROBI)
 
             mu = con_convex[0].dual_value
             pi_plus = con_upper[0].dual_value

@@ -10,8 +10,8 @@ import numpy as np
 import flexitroid.utils.device_sampling as sample
 from flexitroid.utils.device_sampling import DERParameters
 from flexitroid.flexitroid import Flexitroid
-
-
+from flexitroid.cython.p_fast import p_fast
+from flexitroid.cython.b_fast import b_fast
 
 class GeneralDER(Flexitroid):
     """General DER flexibility set representation.
@@ -34,7 +34,7 @@ class GeneralDER(Flexitroid):
     def T(self) -> int:
         return self._T
 
-    def A_b(self, remove_redundant=True) -> np.ndarray:
+    def A_b(self, remove_redundant=False) -> np.ndarray:
         A = np.vstack(
             [np.eye(self.T), -np.eye(self.T), np.tri(self.T), -np.tri(self.T)]
         )
@@ -50,8 +50,14 @@ class GeneralDER(Flexitroid):
             A = A[np.isfinite(b)]
             b = b[np.isfinite(b)]
         return A, b
-
+    
     def b(self, A: Set[int]) -> float:
+        return b_fast(A, self.T, self.active, self.params.u_min, self.params.u_max, self.params.x_min, self.params.x_max)
+    
+    def p(self, A: Set[int]) -> float:
+        return p_fast(A, self.T, self.active, self.params.u_min, self.params.u_max, self.params.x_min, self.params.x_max)
+    
+    def b_slow(self, A: Set[int]) -> float:
         A_c = self.active - A
         b = np.sum(self.params.u_max[list(A)])
         p_c = np.sum(self.params.u_min[list(A_c)])
@@ -77,8 +83,8 @@ class GeneralDER(Flexitroid):
                 ]
             )
         return b
-
-    def p(self, A: Set[int]) -> float:
+    
+    def p_slow(self, A: Set[int]) -> float:
         A_c = self.active - A
         p = np.sum(self.params.u_min[list(A)])
         b_c = np.sum(self.params.u_max[list(A_c)])
@@ -104,88 +110,6 @@ class GeneralDER(Flexitroid):
                 ]
             )
         return p
-
-    # def b(self, A: Set[int]) -> float:
-    #     """Compute submodular function b for the g-polymatroid representation.
-
-    #     Args:
-    #         A: Subset of the ground set T.
-
-    #     Returns:
-    #         Value of b(A) as defined by the recursive formula.
-    #     """
-    #     if not A:
-    #         return 0.0
-
-    #     t_max = max(A)
-    #     T_t = set(range(t_max + 1))
-    #     A_c = T_t - A
-    #     b = np.sum(self.params.u_max[list(A)])
-    #     p_c = np.sum(self.params.u_min[list(A_c)])
-    #     t_set = set()
-    #     for t in range(t_max):
-    #         t_set.add(t)
-    #         b = np.min(
-    #             [
-    #                 b,
-    #                 self.params.x_max[t]
-    #                 - p_c
-    #                 + np.sum(self.params.u_min[list(A_c - t_set)])
-    #                 + np.sum(self.params.u_max[list(A - t_set)]),
-    #             ]
-    #         )
-    #         p_c = np.max(
-    #             [
-    #                 p_c,
-    #                 self.params.x_min[t]
-    #                 - b
-    #                 + np.sum(self.params.u_max[list(A - t_set)])
-    #                 + np.sum(self.params.u_min[list(A_c - t_set)]),
-    #             ]
-    #         )
-    #     return b
-
-    # def p(self, A: Set[int]) -> float:
-    #     """Compute supermodular function p for the g-polymatroid representation.
-
-    #     Args:
-    #         A: Subset of the ground set T.
-
-    #     Returns:
-    #         Value of p(A) as defined by the recursive formula.
-    #     """
-    #     if not A:
-    #         return 0.0
-
-    #     t_max = max(A)
-    #     T_t = set(range(t_max + 1))
-    #     A_c = T_t - A
-
-    #     p = np.sum(self.params.u_min[list(A)])
-    #     b_c = np.sum(self.params.u_max[list(A_c)])
-    #     t_set = set()
-
-    #     for t in range(t_max):
-    #         t_set.add(t)
-    #         p = np.max(
-    #             [
-    #                 p,
-    #                 self.params.x_min[t]
-    #                 - b_c
-    #                 + np.sum(self.params.u_max[list(A_c - t_set)])
-    #                 + np.sum(self.params.u_min[list(A - t_set)]),
-    #             ]
-    #         )
-    #         b_c = np.min(
-    #             [
-    #                 b_c,
-    #                 self.params.x_max[t]
-    #                 - p
-    #                 + np.sum(self.params.u_min[list(A - t_set)])
-    #                 + np.sum(self.params.u_max[list(A_c - t_set)]),
-    #             ]
-    #         )
-    #     return p
 
     @classmethod
     def example(cls, T: int = 24) -> "GeneralDER":

@@ -35,7 +35,7 @@ def pv(T):
 def e1s(T):
     u_max = U_MAX_BOUND * np.random.uniform()
     x_max = X_MAX_BOUND * np.random.uniform()
-    x_min = 0
+    x_min = np.random.uniform(0, np.minimum(x_max, T * u_max))
     return u_max, x_min, x_max
 
 
@@ -62,8 +62,8 @@ def v2g(T):
     a = np.random.randint(T - 1)
     d = np.random.randint(a + 1, T + 1)
 
-    # a = 0
-    # d = T
+    a = 0
+    d = T
     connected_time = d - a
 
     e_max = x_max
@@ -108,4 +108,3 @@ class DERParameters:
         assert len(self.x_max) == T, "SoC bounds must have same length"
         assert np.all(self.u_min <= self.u_max), "Invalid power bounds"
         assert np.all(self.x_min <= self.x_max), "Invalid SoC bounds"
-

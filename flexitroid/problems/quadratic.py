@@ -1,10 +1,9 @@
 import numpy as np
 import cvxpy as cp
-from flexitroid.flexitroid import Flexitroid
 
 
 class QuadraticProgram:
-    def __init__(self, feasible_set: Flexitroid, Q, c, max_iters=1000):
+    def __init__(self, feasible_set, Q, c, max_iters=1000):
         """Initialize the linear program with Dantzig-Wolfe decomposition.
 
         Args:
@@ -22,6 +21,7 @@ class QuadraticProgram:
         self.epsilon = 1e-6  # Convergence tolerance
 
         self.solution = None
+        self.value = None
 
     def solve(self):
         """Solve the linear program using Dantzig-Wolfe decomposition.
@@ -31,6 +31,7 @@ class QuadraticProgram:
         """
         if self.solution == None:
             self.solution, self.history = self.frank_wolfe()
+            self.value = 0.5 * np.dot(self.solution, self.Q @ self.solution) + np.dot( self.c, self.solution) 
 
     def frank_wolfe(self):
         x = self.feasible_set.solve_linear_program(self.c)

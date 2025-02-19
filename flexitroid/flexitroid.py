@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from typing import List, Set, Optional, TypeVar, Generic
 import numpy as np
 from itertools import permutations
-from flexitroid.problems import l_inf
+from flexitroid.problems import l_inf, linear, quadratic
+
 
 
 class Flexitroid(ABC):
@@ -76,8 +77,13 @@ class Flexitroid(ABC):
         return v[:-1]
 
     def form_box(self):
-        C = np.vstack([np.eye(self.T) + 1, -np.eye(self.T) - 1])
-        box = np.array([self.solve_linear_program(c) for c in C])
+        C = np.vstack([np.eye(self.T) + 1, -np.arange(self.T) - 1])
+        box = []
+        for i, c in enumerate(C):
+            print(f'Forming box: {i}/{len(C)}', end='\r')
+            box.append(self.solve_linear_program(c))
+        box = np.array(box)
+        print('Formed box')
         return box
 
     def get_all_vertices(self):
@@ -92,4 +98,14 @@ class Flexitroid(ABC):
     def solve_l_inf(self):
         problem = l_inf.L_inf(self)
         problem.solve()
-        return problem.solution
+        return problem
+    
+    def solve_lp(self, c):
+        problem = linear.LinearProgram(self, c)
+        problem.solve()
+        return problem
+    
+    def solve_qp(self, c, Q):
+        problem = quadratic.QuadraticProgram(self, Q, c)
+        problem.solve()
+        return problem

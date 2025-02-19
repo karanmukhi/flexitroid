@@ -1,11 +1,11 @@
 import numpy as np
 import cvxpy as cp
-from flexitroid.flexitroid import Flexitroid
+
 
 
 class LinearProgram:
     def __init__(
-        self, feasible_set: Flexitroid, A: np.ndarray, b: np.ndarray, c: np.ndarray
+        self, feasible_set, A: np.ndarray, b: np.ndarray, c: np.ndarray
     ):
         """Initialize the linear program with Dantzig-Wolfe decomposition.
 
@@ -25,6 +25,7 @@ class LinearProgram:
         self.lmda = None
         self.v_subset = None
         self.solution = None
+        self.value = None
 
     def solve(self):
         """Solve the linear program using Dantzig-Wolfe decomposition.
@@ -37,6 +38,7 @@ class LinearProgram:
             self.lmda = lmda
             self.v_subset = v_subset
             self.solution = lmda @ v_subset
+            self.value = self.c @ self.solution
 
     def dantzig_wolfe(self):
         V_subset = self.form_initial_set()
@@ -87,7 +89,7 @@ class LinearProgram:
         dual_constraints.append(-alpha <= 1)
 
         dual_prob = cp.Problem(dual_obj, dual_constraints)
-        dual_prob.solve()
+        dual_prob.solve(solver=cp.GUROBI)
 
         return y.value, alpha.value
 
@@ -98,6 +100,6 @@ class LinearProgram:
         dual_obj = cp.Maximize(y @ self.b + alpha)
         dual_constraints = [A_V.T @ y + alpha <= c_V]
         dual_prob = cp.Problem(dual_obj, dual_constraints)
-        dual_prob.solve()
+        dual_prob.solve(solver=cp.GUROBI)
 
         return y.value, alpha.value, dual_constraints[0].dual_value

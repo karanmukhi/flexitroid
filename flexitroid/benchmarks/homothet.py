@@ -19,7 +19,7 @@ class HomothetProjection(InnerApproximation):
 
     def get_b_exact(self):
         T = self.T
-        b_raw = self.population.calculate_indiv_sets().T
+        b_raw = self.population.calculate_indiv_bs().T
         u_max = b_raw[:, :T]
         minus_u_min = b_raw[:, T : 2 * T]
         x_max = b_raw[:, 2 * T : 3 * T]
@@ -127,7 +127,7 @@ def fitHomothetProjectionLinDescisionRule(F, H, B, c, T, N):
 
     # Define and solve the problem
     prob = cp.Problem(objective, constraints)
-    prob.solve()  # Optionally, pass a solver argument, e.g., solver=cp.GUROBI if available
+    prob.solve(solver=cp.GUROBI)  # Optionally, pass a solver argument, e.g., solver=cp.GUROBI if available
 
     # Compute beta and offset vector t from the solution
     beta = 1 / s.value

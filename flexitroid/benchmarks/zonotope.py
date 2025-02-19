@@ -19,7 +19,7 @@ class Zonotope(InnerApproximation):
 
     def get_b_exact(self):
         T = self.T
-        b_raw = self.population.calculate_indiv_sets().T
+        b_raw = self.population.calculate_indiv_bs().T
         u_max = b_raw[:, :T]
         minus_u_min = b_raw[:, T : 2 * T]
         x_max = b_raw[:, 2 * T : 3 * T]
@@ -97,7 +97,7 @@ def getHyperplaneOffset(
         objective = cp.Maximize(C[i, :] @ x)
         constraints = [A @ x <= b]
         prob = cp.Problem(objective, constraints)
-        prob.solve()
+        prob.solve(solver=cp.GUROBI)
         d_list.append(C[i, :] @ x.value)
     return d_list
 
@@ -119,7 +119,7 @@ def optimalZonotopeMaxNorm(
         constraints.append(delta_p[i] - (F[i, :] @ c + W_aux[i, :] @ beta_bar) <= t)
     constraints.append(AG @ beta_bar + A @ c <= b)
     prob = cp.Problem(objective, constraints)
-    prob.solve()
+    prob.solve(solver=cp.GUROBI)
     c = c.value
     beta_bar = beta_bar.value
 

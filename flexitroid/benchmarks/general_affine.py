@@ -14,7 +14,7 @@ class GeneralAffine(InnerApproximation):
         N = self.N
         T = self.T
 
-        bi = self.population.calculate_indiv_sets()
+        bi = self.population.calculate_indiv_bs()
         hx = np.sum(bi, axis=1) / N  # shape: (4*T,)
 
         L = np.tril(np.ones((T, T)))
@@ -50,7 +50,7 @@ def check_feasible(Hy, hIs, T, N):
     constraints = [Y @ ui == u, Hy @ ui <= hy]
 
     prob = cp.Problem(objective, constraints)
-    prob.solve()
+    prob.solve(solver=cp.GUROBI)
     assert prob.status in [
         "optimal",
         "optimal_inaccurate",
@@ -119,6 +119,6 @@ def general_affine_inner_approx(H, hx, hi):
 
     objective = cp.Maximize(cp.trace(P_var))
     prob = cp.Problem(objective, constraints)
-    prob.solve()
+    prob.solve(solver=cp.GUROBI)
 
     return P_var.value, pbar.value

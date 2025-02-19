@@ -138,5 +138,5 @@ def lp_solution(A, b, c):
     constraints = [A @ x <= b]
     obj = cp.Maximize(-c.T @ x)
     prob = cp.Problem(obj, constraints)
-    prob.solve()
+    prob.solve(solver=cp.GUROBI)
     return x.value
