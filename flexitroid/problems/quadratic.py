@@ -67,5 +67,4 @@ class QuadraticProgram:
 
             # Update x
             x = x + gamma * d
-        print(k)
         return x, history

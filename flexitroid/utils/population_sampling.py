@@ -59,6 +59,28 @@ class PopulationGenerator:
     def calculate_indiv_As(self):
         arr = np.array([device.A_b()[0] for device in self.device_list]).T
         return arr
+    
+    def base_line_consumption(self):
+        """Aggregates the baseline consumption of all devices in the population.
+        Calculated by assuming households (PV + ESS) minimize external consumption.
+        And EVSEs (V1G + ESS) charge asap
+        """
+        assert len(self.device_groups["pv"]) == len(self.device_groups["e2s"])
+        assert len(self.device_groups["der"]) == 0
+        assert len(self.device_groups["e1s"]) == 0
+
+        A = []
+        for i in range(len(self.device_groups["pv"])):
+            l = self.device_groups['pv'][i].params.u_min
+            A.append(self.device_groups['e2s'][i].solve_l_inf(l).solution)
+        c1g = np.arange(self.T)[::-1]
+
+        for v1g in self.device_groups['v1g']:
+            A.append(v1g.solve_linear_program(c1g))
+
+        for v2g in self.device_groups['v2g']:
+            A.append(V1G(self.T, v2g.a, v2g.d, v2g.u_max, v2g.e_min, v2g.e_max).solve_linear_program(c1g))
+        return np.sum(A, axis=0)
 
     def generate_population(
         self,

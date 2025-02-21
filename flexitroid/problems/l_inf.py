@@ -3,7 +3,7 @@ import cvxpy as cp
 
 
 class L_inf:
-    def __init__(self, feasible_set):
+    def __init__(self, feasible_set, l: np.ndarray = None):
         """Initialize the linear program with Dantzig-Wolfe decomposition.
 
         Args:
@@ -20,6 +20,10 @@ class L_inf:
         self.v_subset = None
         self.solution = None
         self.value = None
+        if l is None:
+            self.l = np.zeros(self.feasible_set.T)
+        else:
+            self.l = l
 
     def solve(self):
         """Solve the linear program using Dantzig-Wolfe decomposition.
@@ -31,8 +35,8 @@ class L_inf:
             lmda, v_subset = self.dantzig_wolfe()
             self.lmda = lmda
             self.v_subset = v_subset
-            self.solution = lmda @ v_subset
-            self.value = np.max(self.solution)
+            self.solution = lmda @ v_subset + self.l
+            self.value = np.max(self.solution + self.l)
 
     def dantzig_wolfe(self):
         v_subset = self.feasible_set.form_box()
@@ -40,14 +44,13 @@ class L_inf:
         i = 0
         while True:
             i += 1
-            print(i, end="\r")
             t = cp.Variable(nonneg=True)
             lmda = cp.Variable(v_subset.shape[0], nonneg=True)
 
             con_convex = [cp.sum(lmda) == 1]
-            con_upper = [lmda @ v_subset <= t]
+            con_upper = [lmda @ v_subset + self.l<= t]
             con_lower = [
-                -lmda @ v_subset <= t,
+                -lmda @ v_subset - self.l<= t,
             ]
             constraints = con_convex + con_upper + con_lower
 
@@ -65,7 +68,6 @@ class L_inf:
             reduced_cost = -mu - np.dot(new_vertex, pi)
 
             if reduced_cost < 1e-9:
-                print("Terminating")
                 break
             else:
                 v_subset = np.vstack([v_subset, new_vertex])

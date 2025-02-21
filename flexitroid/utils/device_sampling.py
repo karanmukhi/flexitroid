@@ -27,8 +27,9 @@ def pv(T):
     )  # Negative = generation
 
     # Scale to realistic power bounds (kW)
-    u_min = rated_power * base_profile
-    u_max = np.zeros_like(u_min)  # Can curtail to zero but not consume
+    load = np.random.uniform(0.5, 1.5, size=T)
+    u_min = rated_power * base_profile + load
+    u_max = np.zeros_like(u_min) + load# Can curtail to zero but not consume
     return u_min, u_max
 
 
@@ -74,10 +75,10 @@ def v2g(T):
 
 def e2s(T):
     # Power parameters (kW)
-    u_min = U_MIN_BOUND * np.random.uniform()
-    u_max = U_MAX_BOUND * np.random.uniform()  # Can charge up to 2kW
-    x_max = X_MAX_BOUND * np.random.uniform()
-    x_min = X_MIN_BOUND * np.random.uniform()
+    u_min = U_MIN_BOUND * np.random.uniform() * 1
+    u_max = U_MAX_BOUND * np.random.uniform() * 1 # Can charge up to 2kW
+    x_max = X_MAX_BOUND * np.random.uniform() * 1
+    x_min = X_MIN_BOUND * np.random.uniform()* 1
     return u_min, u_max, x_min, x_max
 
 

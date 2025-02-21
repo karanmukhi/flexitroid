@@ -1,7 +1,7 @@
 import numpy as np
 import cvxpy as cp
 from flexitroid.utils.population_sampling import PopulationGenerator
-from flexitroid.benchmarks.benchmark import InnerApproximation
+from numerical_results.benchmarks.benchmark import InnerApproximation
 
 
 class Zonotope(InnerApproximation):

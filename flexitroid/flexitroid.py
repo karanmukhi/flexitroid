@@ -80,10 +80,8 @@ class Flexitroid(ABC):
         C = np.vstack([np.eye(self.T) + 1, -np.arange(self.T) - 1])
         box = []
         for i, c in enumerate(C):
-            print(f'Forming box: {i}/{len(C)}', end='\r')
             box.append(self.solve_linear_program(c))
         box = np.array(box)
-        print('Formed box')
         return box
 
     def get_all_vertices(self):
@@ -95,8 +93,8 @@ class Flexitroid(ABC):
         V = np.array([self.solve_linear_program(c) for c in perms])
         return V
 
-    def solve_l_inf(self):
-        problem = l_inf.L_inf(self)
+    def solve_l_inf(self, l:np.ndarray = None):
+        problem = l_inf.L_inf(self, l)
         problem.solve()
         return problem
     

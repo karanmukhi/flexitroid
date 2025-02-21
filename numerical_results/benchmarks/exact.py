@@ -61,5 +61,4 @@ class Exact(Benchmark):
         objective = cp.Minimize(t)
         prob = cp.Problem(objective, constraints)
         prob.solve(solver=cp.GUROBI)
-        print(prob.status)
         return prob

@@ -10,7 +10,11 @@ def time_lp(T, population):
     agg = Aggregator(pop)
     agg.solve_linear_program(c)
 
-def generate_der_population(T):
+def generate_der_population200(T):
+    pop = PopulationGenerator(T, der_count=200)
+    return pop
+
+def generate_der_population1000(T):
     pop = PopulationGenerator(T, der_count=1000)
     return pop
 
@@ -22,19 +26,15 @@ def generate_e1s_population(T):
     pop = PopulationGenerator(T, e1s_count=1000)
     return pop
 
-def generate_pv_population(T):
-    pop = PopulationGenerator(T, pv_count=1000)
-    return pop
 
 population_type = {
-    'der': generate_der_population,
-    'v1g': generate_v1g_population,
-    'e1s': generate_e1s_population,
-    'pv': generate_pv_population
-}
+    'ESS': generate_e1s_population,
+    'V1G': generate_v1g_population,
+    'DER (200)': generate_der_population200,
+    'DER (1000)': generate_der_population1000,
+    }
 
 Ts = np.arange(0, 96, 12) + 12
-
 n_runs = 10
 with open(f'data/population_time.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)

@@ -25,8 +25,8 @@ class PV(GeneralDER):
         params = DERParameters(
             u_min=u_min,
             u_max=u_max,
-            x_min=np.full(T, np.sum(u_min)),
-            x_max=np.full(T, np.sum(u_max)),
+            x_min=np.cumsum(u_min),
+            x_max=np.cumsum(u_max),
         )
         super().__init__(params)
 
