@@ -1,6 +1,6 @@
 import numpy as np
 from flexitroid.aggregations.aggregator import Aggregator
-from flexitroid.utils.population_sampling import PopulationGenerator
+from flexitroid.utils.population_generator import PopulationGenerator
 import timeit
 import csv
 

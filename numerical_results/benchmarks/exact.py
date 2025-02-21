@@ -1,7 +1,7 @@
 import numpy as np
 import cvxpy as cp
 from flexitroid.benchmarks.benchmark import Benchmark
-from flexitroid.utils.population_sampling import PopulationGenerator
+from flexitroid.utils.population_generator import PopulationGenerator
 
 class Exact(Benchmark):
     def __init__(self, population: PopulationGenerator):

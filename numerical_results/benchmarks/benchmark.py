@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import cvxpy as cp
 import numpy as np
-from flexitroid.utils.population_sampling import PopulationGenerator
+from flexitroid.utils.population_generator import PopulationGenerator
 import time
 
 class Benchmark(ABC):

@@ -2,7 +2,7 @@ import numpy as np
 import cvxpy as cp
 from scipy.linalg import block_diag
 from flexitroid.benchmarks.benchmark import InnerApproximation
-from flexitroid.utils.population_sampling import PopulationGenerator
+from flexitroid.utils.population_generator import PopulationGenerator
 
 
 class GeneralAffine(InnerApproximation):

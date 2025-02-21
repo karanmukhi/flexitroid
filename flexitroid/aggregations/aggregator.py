@@ -6,7 +6,7 @@ including the Minkowski sum of individual flexibility sets.
 
 from typing import Set, TypeVar
 from flexitroid.flexitroid import Flexitroid
-from flexitroid.utils.population_sampling import PopulationGenerator
+from flexitroid.utils.population_generator import PopulationGenerator
 from flexitroid.aggregations.pv_aggregator import PVAggregator
 from flexitroid.aggregations.v1g_aggregator import V1GAggregator
 

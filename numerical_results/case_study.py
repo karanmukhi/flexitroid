@@ -1,6 +1,6 @@
 import numpy as np
 from flexitroid.aggregations.aggregator import Aggregator
-from flexitroid.utils.population_sampling import PopulationGenerator
+from flexitroid.utils.population_generator import PopulationGenerator
 from numerical_results.benchmarks.general_affine import GeneralAffine
 from numerical_results.benchmarks.zonotope import Zonotope
 from numerical_results.benchmarks.homothet import HomothetProjection

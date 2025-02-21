@@ -5,7 +5,7 @@ from flexitroid.devices.pv import PV
 from flexitroid.devices.level1 import E1S, V1G
 from flexitroid.devices.general_der import GeneralDER
 from flexitroid.devices.level2 import E2S, V2G
-from flexitroid.utils.population_sampling import PopulationGenerator
+from flexitroid.utils.population_generator import PopulationGenerator
 from flexitroid.aggregations.v1g_aggregator import V1GAggregator
 from flexitroid.aggregations.e1s_aggregator import E1SAggregator
 from flexitroid.aggregations.pv_aggregator import PVAggregator

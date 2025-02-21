@@ -1,6 +1,6 @@
 import cvxpy as cp
 import numpy as np
-from flexitroid.utils.population_sampling import PopulationGenerator
+from flexitroid.utils.population_generator import PopulationGenerator
 from flexitroid.benchmarks.benchmark import InnerApproximation
 
 
