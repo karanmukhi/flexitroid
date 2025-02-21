@@ -7,7 +7,7 @@ build/
 
 # Virtual Environment
 .venv/
-
+.DS_Store 
 # IDE
 .idea/
 .vscode/
