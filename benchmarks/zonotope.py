@@ -149,3 +149,39 @@ def getVectord(
         d_list.append(-C[i, :] @ np.array(c) + np.array(delta_d_list[i]))
     d = np.array(d_list)
     return d
+
+def get_G0(T):
+    I = np.eye(T)
+    q = np.zeros(T)
+    r = np.array([-1,1])
+    r = r / np.linalg.norm(r)
+    q[:2] = r
+    J = np.vstack([np.roll(q, i) for i in range(0,T-1)]).T
+    return np.hstack([I, J])
+
+
+def compute_A_b(A_list, b_list):
+    T = A_list[0].shape[1]
+    Z, G = generateZonotope(T, [0] * T)
+    C = getMatrixC(T)  # calculate matrix of half-space representation Cx<=d
+    Zonotope_list = []
+    for A, b in zip(A_list, b_list):
+        d_new = getHyperplaneOffset(
+            A, C, b, T
+        )  # calculate vector of half-space representation Cx<=d
+        Z = optimalZonotopeMaxNorm(
+            A, b, G, C, d_new
+        )  # calulate optimal center and scaling limits
+        Zonotope_list.append(Z)
+
+    # Calculate M-sum of zonotopes
+    Zonotope_minkowski_list = []
+    for l in range(len(Zonotope_list[0])):
+        s = np.array(Zonotope_list[0][l])
+        for h in range(1, len(Zonotope_list)):
+            s = s + np.array(Zonotope_list[h][l])
+        Zonotope_minkowski_list.append(list(s))
+
+    b_approx = getVectord(C, Zonotope_minkowski_list, T)
+    A_approx = C
+    return A_approx, b_approx

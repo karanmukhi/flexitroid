@@ -1,7 +1,7 @@
 import cvxpy as cp
 import numpy as np
 from flexitroid.utils.population_generator import PopulationGenerator
-from flexitroid.benchmarks.benchmark import InnerApproximation
+from numerical_results.benchmarks.benchmark import InnerApproximation
 
 
 class HomothetProjection(InnerApproximation):
@@ -127,7 +127,9 @@ def fitHomothetProjectionLinDescisionRule(F, H, B, c, T, N):
 
     # Define and solve the problem
     prob = cp.Problem(objective, constraints)
-    prob.solve(solver=cp.GUROBI)  # Optionally, pass a solver argument, e.g., solver=cp.GUROBI if available
+    prob.solve(
+        solver=cp.GUROBI
+    )  # Optionally, pass a solver argument, e.g., solver=cp.GUROBI if available
 
     # Compute beta and offset vector t from the solution
     beta = 1 / s.value

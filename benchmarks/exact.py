@@ -1,7 +1,8 @@
 import numpy as np
 import cvxpy as cp
-from flexitroid.benchmarks.benchmark import Benchmark
+from numerical_results.benchmarks.benchmark import Benchmark
 from flexitroid.utils.population_generator import PopulationGenerator
+
 
 class Exact(Benchmark):
     def __init__(self, population: PopulationGenerator):
@@ -19,13 +20,13 @@ class Exact(Benchmark):
 
         ui = cp.Variable((N, T))
 
-        constraints = [As[i]@ui[i] <= bs[i] for i in range(N)]
+        constraints = [As[i] @ ui[i] <= bs[i] for i in range(N)]
 
-        prob = cp.Problem(cp.Minimize(c@Y@ui), constraints)
+        prob = cp.Problem(cp.Minimize(c @ Y @ ui), constraints)
         prob.solve(solver=cp.GUROBI)
-    
+
         return prob
-    
+
     def solve_qp(self, c, Q):
         T = self.T
         N = self.N
@@ -36,13 +37,13 @@ class Exact(Benchmark):
 
         ui = cp.Variable((N, T))
         u = cp.Variable(T)
-        constratints = [As[i]@ui[i] <= bs[i] for i in range(N)]
+        constratints = [As[i] @ ui[i] <= bs[i] for i in range(N)]
 
-        objective = cp.Minimize(0.5 * cp.quad_form(Y@ui, Q) + c @ Y@ui)
+        objective = cp.Minimize(0.5 * cp.quad_form(Y @ ui, Q) + c @ Y @ ui)
         prob = cp.Problem(objective, constratints)
         prob.solve(solver=cp.GUROBI)
         return prob
-    
+
     def solve_l_inf(self):
         T = self.T
         N = self.N
@@ -56,8 +57,8 @@ class Exact(Benchmark):
         t = cp.Variable(nonneg=True)
         constraints = []
         for i in range(N):
-            constraints += [As[i]@ui[i] <= bs[i]]
-        constraints += [Y@ui <=t , -Y@ui <= t]
+            constraints += [As[i] @ ui[i] <= bs[i]]
+        constraints += [Y @ ui <= t, -Y @ ui <= t]
         objective = cp.Minimize(t)
         prob = cp.Problem(objective, constraints)
         prob.solve(solver=cp.GUROBI)

@@ -4,6 +4,7 @@ import numpy as np
 from flexitroid.utils.population_generator import PopulationGenerator
 import time
 
+
 class Benchmark(ABC):
     """Abstract base class for benchmarks.
 
@@ -20,7 +21,7 @@ class Benchmark(ABC):
         self.N = population.N
 
     @abstractmethod
-    def solve_linear_program(self) -> None:
+    def solve_lp(self) -> None:
         pass
 
     @abstractmethod
@@ -68,7 +69,7 @@ class InnerApproximation(Benchmark):
     def compute_unaggregatedA_b(self):
         ...
 
-    def solve_linear_program(self, c, A=None, b=None) -> None:
+    def solve_lp(self, c, A=None, b=None) -> None:
         A_approx, b_approx = self.A_b
         if A is not None and b is not None:
             A = np.vstack([A, A_approx])
