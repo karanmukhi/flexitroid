@@ -1,0 +1,25 @@
+\documentclass{standalone}
+\usepackage{tikz}
+
+\begin{document}
+
+\begin{tikzpicture}
+    % Draw x-axis
+    \draw[->] (-1,0) -- (5,0) node[right] {$x$};
+    % Draw y-axis
+    \draw[->] (0,-1) -- (0,4) node[above] {$y$};
+
+    % Add labels
+    \node at (0.5, 0.5) [above right] {Example Point};
+    \filldraw (2, 2) circle (2pt); % Example point
+
+    % Add ticks on x-axis
+    \foreach \x in {1,2,3,4}
+        \draw (\x,0.1) -- (\x,-0.1) node[below] {\x};
+
+    % Add ticks on y-axis
+    \foreach \y in {1,2,3}
+        \draw (0.1,\y) -- (-0.1,\y) node[left] {\y};
+\end{tikzpicture}
+
+\end{document}
