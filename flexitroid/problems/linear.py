@@ -42,14 +42,13 @@ class LinearProgram:
         i = 0
 
         while i < self.max_iter:
-            print(i, end="\r")
             A_V = np.einsum("ij,kj->ik", self.A, V_subset)
             c_V = np.einsum("j,kj->k", self.c, V_subset)
 
             y, alpha, lmda = self.solve_dual(A_V, c_V)
 
             d = self.c - np.einsum("i,ij->j", y, self.A)
-            new_vertex = self.feasible_set.solve_linear_program(d)
+            new_vertex = self.feasible_set.greedy(d)
 
             if d @ new_vertex - alpha > -self.epsilon:
                 break
@@ -67,7 +66,7 @@ class LinearProgram:
             y, alpha = self.initial_vertex_dual(A_V)
 
             d = -np.einsum("i,ij->j", y, self.A)
-            new_vertex = self.feasible_set.solve_linear_program(d)
+            new_vertex = self.feasible_set.greedy(d)
 
             if d @ new_vertex - alpha > -1e-6:
                 break

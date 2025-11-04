@@ -78,13 +78,13 @@ class PopulationGenerator:
         c1g = np.arange(self.T)[::-1]
 
         for v1g in self.device_groups["v1g"]:
-            A.append(v1g.solve_linear_program(c1g))
+            A.append(v1g.greedy(c1g))
 
         for v2g in self.device_groups["v2g"]:
             A.append(
                 V1G(
                     self.T, v2g.a, v2g.d, v2g.u_max, v2g.e_min, v2g.e_max
-                ).solve_linear_program(c1g)
+                ).greedy(c1g)
             )
         return np.sum(A, axis=0)
 

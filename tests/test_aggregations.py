@@ -85,7 +85,7 @@ def test_ev_aggregation():
 def aggregation_vertex_tester(aggregation, population):
     T = aggregation.T
     c = np.random.uniform(-1, 1, size=T)
-    agg_opt = aggregation.solve_linear_program(c)
-    individual_opt = np.array([device.solve_linear_program(c) for device in population])
+    agg_opt = aggregation.greedy(c)
+    individual_opt = np.array([device.greedy(c) for device in population])
     agg_indiv = np.sum(individual_opt, axis=0)
     assert np.linalg.norm(agg_opt - agg_indiv) < 1e-6

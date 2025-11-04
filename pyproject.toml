@@ -5,7 +5,10 @@ description = "A repository for aggregating flexibility in populations of distri
 authors = ["Karan Mukhi <karan.mukhi@cs.ox.ac.uk>"]
 license = "MIT License"
 readme = "README.md"
-packages = [{include = "flexitroid", from = "src"}]
+packages = [
+    {include = "flexitroid", from = "."},
+    {include = "benchmarks", from = "."}
+]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"  # Updated Python version requirement

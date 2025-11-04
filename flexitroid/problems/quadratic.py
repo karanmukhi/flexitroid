@@ -38,14 +38,14 @@ class QuadraticProgram:
     def frank_wolfe(self):
         history = {"obj": [], "gap": [], "V": []}
 
-        x = self.feasible_set.solve_linear_program(self.c)
+        x = self.feasible_set.greedy(self.c)
         history["V"].append(self.c)
 
         for k in range(self.max_iter):
             # Compute gradient: g = Qx + c
             g = self.Q @ x + self.c
 
-            s = self.feasible_set.solve_linear_program(g)
+            s = self.feasible_set.greedy(g)
 
             gap = g.dot(x - s)
 

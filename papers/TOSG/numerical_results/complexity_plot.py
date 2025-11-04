@@ -8,7 +8,7 @@ def time_lp(T, population):
     c = np.random.uniform(-1,1, size=T)
     pop = population(T)    
     agg = Aggregator(pop)
-    agg.solve_linear_program(c)
+    agg.greedy(c)
 
 def generate_der_population200(T):
     pop = PopulationGenerator(T, der_count=200)

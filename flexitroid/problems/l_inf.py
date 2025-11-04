@@ -63,7 +63,7 @@ class L_inf:
             pi_minus = con_lower[0].dual_value
             pi = pi_plus - pi_minus
 
-            new_vertex = self.feasible_set.solve_linear_program(pi)
+            new_vertex = self.feasible_set.greedy(pi)
 
             reduced_cost = -mu - np.dot(new_vertex, pi)
 

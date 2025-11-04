@@ -1,9 +1,9 @@
 import numpy as np
 from flexitroid.aggregations.aggregator import Aggregator
 from flexitroid.utils.population_generator import PopulationGenerator
-from numerical_results.benchmarks.general_affine import GeneralAffine
-from numerical_results.benchmarks.zonotope import Zonotope
-from numerical_results.benchmarks.homothet import HomothetProjection
+from benchmarks.general_affine import GeneralAffine
+from benchmarks.zonotope import Zonotope
+from benchmarks.homothet import HomothetProjection
 from flexitroid.utils.cost import generate_energy_price_curve
 import csv
 
@@ -32,7 +32,7 @@ while True:
         print(f'g-polymatroid: {i}')
 
         g_polymatroid = Aggregator(population)
-        g_polymatroid_lp = g_polymatroid.solve_linear_program(c)
+        g_polymatroid_lp = g_polymatroid.greedy(c)
         g_polymatroid_l_inf = g_polymatroid.solve_l_inf().solution
 
         writer.writerow(['g-polymatroid', run_id, 'lp', c@g_polymatroid_lp])
@@ -40,14 +40,14 @@ while True:
 
         print(f'general affine: {i}')
         general_affine = GeneralAffine(population)
-        general_affine.solve_linear_program(c)
+        general_affine.greedy(c)
         general_affine.solve_l_inf()
         writer.writerow(['general_affine', run_id, 'lp', c@general_affine.lp_x])
         writer.writerow(['general_affine', run_id, 'l_inf', general_affine.l_inf_t])
 
         # print(f'homothet: {i}')
         # homothet_projection = HomothetProjection(population)
-        # homothet_projection.solve_linear_program(c)
+        # homothet_projection.greedy(c)
         # homothet_projection.solve_l_inf()
         # writer.writerow(['homothet', run_id, 'lp', c@homothet_projection.lp_x])
         # writer.writerow(['homothet', run_id, 'l_inf', homothet_projection.l_inf_t])
@@ -55,7 +55,7 @@ while True:
 
         print(f'zonotope: {i}')
         zonotope = Zonotope(population)
-        zonotope.solve_linear_program(c)
+        zonotope.greedy(c)
         zonotope.solve_l_inf()
         writer.writerow(['zonotope', run_id, 'lp', c@zonotope.lp_x])
         writer.writerow(['zonotope', run_id, 'l_inf', zonotope.l_inf_t])

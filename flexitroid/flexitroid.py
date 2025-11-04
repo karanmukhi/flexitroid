@@ -46,7 +46,7 @@ class Flexitroid(ABC):
             return -self.p(T_set - A)
         return self.b(A)
 
-    def solve_linear_program(self, c: np.ndarray) -> np.ndarray:
+    def greedy(self, c: np.ndarray) -> np.ndarray:
         """Solve a linear program over the g-polymatroid using the greedy algorithm.
 
         Args:
@@ -80,7 +80,7 @@ class Flexitroid(ABC):
         C = np.vstack([np.eye(self.T) + 1, -np.arange(self.T) - 1])
         box = []
         for i, c in enumerate(C):
-            box.append(self.solve_linear_program(c))
+            box.append(self.greedy(c))
         box = np.array(box)
         return box
 
@@ -90,7 +90,7 @@ class Flexitroid(ABC):
             perms.append(list(permutations(np.arange(self.T) + 1 - t)))
 
         perms = np.array(perms).reshape(-1, self.T)
-        V = np.array([self.solve_linear_program(c) for c in perms])
+        V = np.array([self.greedy(c) for c in perms])
         return V
 
     def solve_l_inf(self, l: np.ndarray = None):

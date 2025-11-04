@@ -43,16 +43,15 @@ class SingalTracker:
     def frank_wolfe(self):
         history = {"obj": [], "gap": [], "V": [], 'c': []}
 
-        x = self.feasible_set.solve_linear_program(self.c)
+        x = self.feasible_set.greedy(self.c)
         history["V"].append(x)
         history["c"].append(self.c)
 
         for k in range(self.max_iter):
-            print(k, end='\r')
             # Compute gradient: g = Qx + c
             g = self.Q @ x + self.c
 
-            s = self.feasible_set.solve_linear_program(g)
+            s = self.feasible_set.greedy(g)
 
             gap = g.dot(x - s)
 

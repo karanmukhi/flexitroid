@@ -102,7 +102,7 @@ def device_vertex_tester(device):
     c = np.random.uniform(-1, 1, size=T)
     A, b = device.A_b()
     lp_sol = lp_solution(A, b, c)
-    gp_sol = device.solve_linear_program(c)
+    gp_sol = device.greedy(c)
     assert np.linalg.norm(gp_sol - lp_sol) < 1e-5
 
 
@@ -111,7 +111,7 @@ def device_top_tester(device):
     c = np.random.uniform(0, 1, size=T)
     A, b = device.A_b()
     lp_sol = lp_solution(A, b, c)
-    gp_sol = device.solve_linear_program(c)
+    gp_sol = device.greedy(c)
     assert np.linalg.norm(gp_sol - lp_sol) < 1e-5
 
 
@@ -120,7 +120,7 @@ def device_bottom_tester(device):
     c = np.random.uniform(-1, 0, size=T)
     A, b = device.A_b()
     lp_sol = lp_solution(A, b, c)
-    gp_sol = device.solve_linear_program(c)
+    gp_sol = device.greedy(c)
     assert np.linalg.norm(gp_sol - lp_sol) < 1e-5
 
 

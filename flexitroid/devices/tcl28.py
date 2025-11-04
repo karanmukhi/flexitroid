@@ -67,7 +67,6 @@ class TCLapprox(GeneralDER):
         raise NotImplementedError
     
     def p_interval(self, x_0, t):
-        print('dd')
         raise NotImplementedError
     
     def x_b(self, x_0, t):

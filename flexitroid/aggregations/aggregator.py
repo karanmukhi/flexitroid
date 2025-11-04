@@ -56,7 +56,7 @@ class Aggregator(Flexitroid):
     
     def sample_constraints(self, tightness=1):
         prob = self.solve_l_inf()
-        # dist = np.max(self.solve_linear_program(-np.arange(self._T))) - prob.value
+        # dist = np.max(self.greedy(-np.arange(self._T))) - prob.value
         a_u = np.max(prob.solution) + np.ones(self._T) * tightness
         return a_u
     
@@ -77,7 +77,7 @@ class Aggregator(Flexitroid):
         for device in self.population.device_list:
             u_i = np.zeros(self._T)
             for l, c in zip(lmda, pi):
-                vertex = device.solve_linear_program(c)
+                vertex = device.greedy(c)
                 u_i += l*vertex
             disaggregation.append(u_i)
         return np.array(disaggregation)

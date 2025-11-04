@@ -7,25 +7,22 @@ build/
 
 # Virtual Environment
 .venv/
-.DS_Store 
+
 # IDE
 .idea/
 .vscode/
 
 # Notebooks
-notebooks/# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-dist/
-build/
-
-# Virtual Environment
-.venv/
-
-# IDE
-.idea/
-.vscode/
+notebooks/
 
 # Development
 development/
+
+# Cython
+*.c
+*.so
+*.pyx
+flexitroid/cython/build/
+
+# OS
+.DS_Store

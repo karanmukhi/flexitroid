@@ -1,7 +1,7 @@
 import cvxpy as cp
 import numpy as np
 from flexitroid.utils.population_generator import PopulationGenerator
-from numerical_results.benchmarks.benchmark import InnerApproximation
+from benchmarks.benchmark import InnerApproximation
 
 
 class HomothetProjection(InnerApproximation):
@@ -137,28 +137,4 @@ def fitHomothetProjectionLinDescisionRule(F, H, B, c, T, N):
     return beta, t_val
 
 
-# def fitHomothetProjectionLinDescisionRule(F,H,B,c,T,N): # calculates optimal scaling factor and offset
-#     I = np.eye(T)
-#     rows_B = 4*T*N
-#     model = gp.Model("MIA")
-#     model.Params.OutputFlag = 0
-#     s = model.addMVar(shape = 1)
-#     G = model.addMVar(shape = (rows_B,4*T))
-#     r = model.addMVar(shape = T,lb=-gp.GRB.INFINITY)
-#     V = model.addMVar(shape = T*N-T,lb=-gp.GRB.INFINITY)
-#     aux = model.addMVar(shape = rows_B,lb=-gp.GRB.INFINITY)
-#     aux_IW = model.addMVar(shape = (T*N,T),lb=-gp.GRB.INFINITY)
-#     aux_rV = model.addMVar(shape = T*N,lb=-gp.GRB.INFINITY)
 
-#     model.setObjective(s,gp.GRB.MINIMIZE)
-#     model.addConstrs(aux_IW[i,j] == I[i,j] for i in range(T) for j in range(T))
-#     model.addConstr(aux_rV[0:T] == r)
-#     model.addConstr(aux_rV[T:] == -V)
-#     for i in range(rows_B):
-#         model.addConstrs(G[i,:]@F[:,j] == B[i,:]@aux_IW[:,j] for j in range(T))
-#     model.addConstrs(aux[i] == gp.quicksum(G[i,k]*H[k] for k in range(4*T)) for i in range(rows_B))
-#     model.addConstr(aux <= c.reshape(rows_B,1)@s + B@aux_rV)
-#     model.optimize()
-#     beta = 1/s.X
-#     t = -r.X[0:T]/s.X
-#     return beta,t

@@ -64,7 +64,6 @@ class GeneralDER(Flexitroid):
         )
 
     def p(self, A: Set[int]) -> float:
-        print(A)
         return p_fast(
             A,
             self.T,
