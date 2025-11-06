@@ -29,5 +29,5 @@ flexitroid/cython/build/
 
 # Data
 *.csv
-
+*.pdf
 *.ipynb
