@@ -26,3 +26,6 @@ flexitroid/cython/build/
 
 # OS
 .DS_Store
+
+# Data
+*.csv
