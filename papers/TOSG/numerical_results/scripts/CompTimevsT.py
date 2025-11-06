@@ -11,24 +11,30 @@ approximation_type = {
     'G-Polymatroid': Aggregator,
     'General Affine': GeneralAffine,
     'Zonotope': Zonotope,
-    'Homothet': HomothetProjection
+    # 'Homothet': HomothetProjection
 }
 
-def time_lp(approximation):
-    T = 24
+def time_lp(approximation, N, T):
     population = PopulationGenerator(T, e2s_count=N)
     c = np.random.uniform(-1,1, size=T)
     approximation(population).solve_lp(c)
 
-Ns = np.arange(0, 500, 50) + 50
-n_runs = 10
-with open(f'data/benchmarking_time.csv', 'w', newline='') as csvfile:
+# N = 50
+# Ts = np.arange(0, 96, 12) + 12
+# n_runs = 10
+
+N = 4
+Ts = np.array([4,6,8,10])
+n_runs = 2
+
+
+with open(f'papers/TOSG/numerical_results/data/compVt.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
-    writer.writerow(['benchmark', 'N', 'time'])
-    for N in Ns:
+    writer.writerow(['benchmark', 'T', 'time'])
+    for T in Ts:
         for name, approximation in approximation_type.items():
             print(name)
-            time = timeit.timeit(lambda: time_lp(approximation), number=n_runs)
+            time = timeit.timeit(lambda: time_lp(approximation, N, T), number=n_runs)
             avg_time = time / n_runs
-            writer.writerow([name, N, avg_time])
-            print(f'{name} {N} {time}')
+            writer.writerow([name, T, avg_time])
+            print(f'{name} {T} {time}')

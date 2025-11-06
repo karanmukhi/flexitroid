@@ -13,8 +13,28 @@ class LinearProgram:
             c: Cost vector
         """
         self.feasible_set = feasible_set
-        self.A = A
-        self.b = b
+        T = feasible_set.T
+        
+        # Ensure A is always 2D: shape (num_constraints, T)
+        if A is None or (isinstance(A, np.ndarray) and A.size == 0):
+            self.A = np.zeros((0, T))
+        else:
+            A = np.asarray(A)
+            if A.ndim == 1:
+                # If A is 1D, reshape to (1, T)
+                self.A = A.reshape(1, -1)
+            elif A.ndim == 2:
+                # If A is already 2D, use it as is
+                self.A = A
+            else:
+                raise ValueError(f"A must be 1D or 2D, got {A.ndim}D")
+        
+        # Ensure b is always 1D: shape (num_constraints,)
+        if b is None or (isinstance(b, np.ndarray) and b.size == 0):
+            self.b = np.zeros(0)
+        else:
+            self.b = np.atleast_1d(b)
+        
         self.c = c
         self.epsilon = 1e-6  # Convergence tolerance
         self.max_iter = 1000  # Maximum iterations
@@ -47,7 +67,11 @@ class LinearProgram:
 
             y, alpha, lmda = self.solve_dual(A_V, c_V)
 
-            d = self.c - np.einsum("i,ij->j", y, self.A)
+            # Handle empty y (no constraints case)
+            if y.size == 0:
+                d = self.c
+            else:
+                d = self.c - np.einsum("i,ij->j", y, self.A)
             new_vertex = self.feasible_set.greedy(d)
 
             if d @ new_vertex - alpha > -self.epsilon:
@@ -65,7 +89,11 @@ class LinearProgram:
 
             y, alpha = self.initial_vertex_dual(A_V)
 
-            d = -np.einsum("i,ij->j", y, self.A)
+            # Handle empty y (no constraints case)
+            if y.size == 0:
+                d = np.zeros(self.feasible_set.T)
+            else:
+                d = -np.einsum("i,ij->j", y, self.A)
             new_vertex = self.feasible_set.greedy(d)
 
             if d @ new_vertex - alpha > -1e-6:
@@ -74,28 +102,52 @@ class LinearProgram:
         return V_subset
 
     def initial_vertex_dual(self, A_V):
-        y = cp.Variable(self.b.shape[0], neg=True)
-        alpha = cp.Variable()
-
-        dual_obj = cp.Maximize(y @ self.b + alpha)
-
-        dual_constraints = []
-        dual_constraints.append(A_V.T @ y + alpha <= 0)
-        dual_constraints.append(alpha <= 1)
-        dual_constraints.append(-alpha <= 1)
+        num_constraints = self.b.shape[0]
+        
+        if num_constraints == 0:
+            # No constraints case: y is empty, so y @ b = 0
+            # A_V has shape (0, k), so A_V.T @ y = 0 (k-vector of zeros) when y is empty
+            alpha = cp.Variable()
+            dual_obj = cp.Maximize(alpha)
+            dual_constraints = []
+            # A_V.T @ y + alpha <= 0 becomes alpha <= 0 when y is empty
+            dual_constraints.append(alpha <= 0)
+            dual_constraints.append(alpha <= 1)
+            dual_constraints.append(-alpha <= 1)
+            y_value = np.zeros(0)
+        else:
+            y = cp.Variable(num_constraints, neg=True)
+            alpha = cp.Variable()
+            dual_obj = cp.Maximize(y @ self.b + alpha)
+            dual_constraints = []
+            dual_constraints.append(A_V.T @ y + alpha <= 0)
+            dual_constraints.append(alpha <= 1)
+            dual_constraints.append(-alpha <= 1)
+            y_value = y.value
 
         dual_prob = cp.Problem(dual_obj, dual_constraints)
         dual_prob.solve(solver=cp.GUROBI)
 
-        return y.value, alpha.value
+        return y_value, alpha.value
 
     def solve_dual(self, A_V, c_V):
-        y = cp.Variable(self.b.shape[0], neg=True)
-        alpha = cp.Variable()
+        num_constraints = self.b.shape[0]
+        
+        if num_constraints == 0:
+            # No constraints case: y is empty, so y @ b = 0
+            alpha = cp.Variable()
+            dual_obj = cp.Maximize(alpha)
+            # A_V.T @ y = 0 when y is empty, so constraint becomes alpha <= c_V
+            dual_constraints = [alpha <= c_V]
+            y_value = np.zeros(0)
+        else:
+            y = cp.Variable(num_constraints, neg=True)
+            alpha = cp.Variable()
+            dual_obj = cp.Maximize(y @ self.b + alpha)
+            dual_constraints = [A_V.T @ y + alpha <= c_V]
+            y_value = y.value
 
-        dual_obj = cp.Maximize(y @ self.b + alpha)
-        dual_constraints = [A_V.T @ y + alpha <= c_V]
         dual_prob = cp.Problem(dual_obj, dual_constraints)
         dual_prob.solve(solver=cp.GUROBI)
 
-        return y.value, alpha.value, dual_constraints[0].dual_value
+        return y_value, alpha.value, dual_constraints[0].dual_value
