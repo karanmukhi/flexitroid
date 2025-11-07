@@ -133,6 +133,11 @@ class Flexitroid(ABC):
         b : np.ndarray
             Right-hand side vector of length 2 * 2^T containing the constraint bounds.
 
+        Raises
+        ------
+        ValueError
+            If T > 8, as the computation becomes infeasible (2^T constraints).
+
         Notes
         -----
         - This is O(2^T * T) in time and space, so only feasible for moderately small T.
@@ -140,6 +145,8 @@ class Flexitroid(ABC):
         - The last 2^T rows correspond to lower bounds (-p(A) constraints).
         """
         T = self.T
+        if T > 8:
+            raise ValueError(f"T={T} is too large. This function only supports T ≤ 8 due to exponential complexity (2^T constraints).")
         idxs = list(range(T))
         
         # Total number of constraints: 2 constraints per subset (upper and lower bound)
