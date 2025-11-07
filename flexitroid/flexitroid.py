@@ -113,6 +113,63 @@ class Flexitroid(ABC):
         problem.solve()
         return problem
 
+    def get_constraint_matrices(self):
+        """
+        Construct the constraint matrices A and b that define the g-polymatroid Q(p,b).
+
+        The g-polymatroid is defined by constraints:
+            p(A) ≤ Σ_{t∈A} u(t) ≤ b(A)  for all subsets A ⊆ [T]
+
+        These are converted to standard form Au ≤ b where:
+        - For each subset A, we have:
+          * Upper bound: Σ_{t∈A} u(t) ≤ b(A)
+          * Lower bound: -Σ_{t∈A} u(t) ≤ -p(A)
+
+        Returns
+        -------
+        A : np.ndarray
+            Constraint matrix of shape (2 * 2^T, T) where each row represents
+            a constraint for a subset A ⊆ [T].
+        b : np.ndarray
+            Right-hand side vector of length 2 * 2^T containing the constraint bounds.
+
+        Notes
+        -----
+        - This is O(2^T * T) in time and space, so only feasible for moderately small T.
+        - The first 2^T rows correspond to upper bounds (b(A) constraints).
+        - The last 2^T rows correspond to lower bounds (-p(A) constraints).
+        """
+        T = self.T
+        idxs = list(range(T))
+        
+        # Total number of constraints: 2 constraints per subset (upper and lower bound)
+        num_constraints = 2 * (2 ** T)
+        A = np.zeros((num_constraints, T))
+        b_vec = np.zeros(num_constraints)
+        
+        constraint_idx = 0
+        
+        # Iterate over all subsets A ⊆ [T]
+        for size in range(T + 1):
+            for combo in combinations(idxs, size):
+                A_subset = set(combo)
+                
+                # Upper bound constraint: Σ_{t∈A} u(t) ≤ b(A)
+                # Create row with 1s in positions t∈A
+                for t in A_subset:
+                    A[constraint_idx, t] = 1.0
+                b_vec[constraint_idx] = self.b(A_subset)
+                constraint_idx += 1
+                
+                # Lower bound constraint: -Σ_{t∈A} u(t) ≤ -p(A)
+                # Create row with -1s in positions t∈A
+                for t in A_subset:
+                    A[constraint_idx, t] = -1.0
+                b_vec[constraint_idx] = -self.p(A_subset)
+                constraint_idx += 1
+        
+        return A, b_vec
+
     def in_g_polymatroid_naive(self, u: np.ndarray) -> bool:
         """
         Naively check whether vector u lies in Q(p,b).
