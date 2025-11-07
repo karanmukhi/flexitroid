@@ -113,7 +113,7 @@ class Flexitroid(ABC):
         problem.solve()
         return problem
 
-    def get_constraint_matrices(self):
+    def get_g_polymatroid_constraints(self):
         """
         Construct the constraint matrices A and b that define the g-polymatroid Q(p,b).
 
