@@ -1,5 +1,6 @@
 from .general_der import GeneralDER, DERParameters
-from . import parameter_sampling as sample
+import flexitroid.utils.device_sampling as sample
+from flexitroid.utils.device_sampling import DERParameters
 import numpy as np
 from typing import Set
 
@@ -42,13 +43,12 @@ class V1G(GeneralDER):
         u_max_arr[a:d] = u_max
 
         # Create SoC bound arrays with different constraints before/after departure
-        x_min_arr = np.full(T, -np.inf)  # Initialize with no constraints
-        x_max_arr = np.full(T, np.inf)  # Initialize with no constraints
+        x_min_arr = np.full(T, 0, dtype=np.float64)  # Initialize with no constraints
+        x_max_arr = np.full(T, np.sum(u_max_arr))  # Initialize with no constraints
 
         # Set SoC bounds after departure
-        x_min_arr[d - 1 :] = e_min
         x_max_arr[d - 1 :] = e_max
-
+        x_min_arr[d - 1 :] = e_min
         # Initialize parent class with constructed parameter arrays
         params = DERParameters(
             u_min=u_min_arr, u_max=u_max_arr, x_min=x_min_arr, x_max=x_max_arr
@@ -64,7 +64,7 @@ class V1G(GeneralDER):
         self.active = set(range(a, d))
 
     def _get_major(self, u_max: float, e_max: float, a: int, d: int) -> np.ndarray:
-        connected_time = (d - a)
+        connected_time = d - a
         major = np.zeros(shape=connected_time)
         full_power_time = int(e_max // u_max)
         if full_power_time >= connected_time:
@@ -127,7 +127,7 @@ class E1S(V1G):
     energy storage system with unidirectional power flow (charging only).
     """
 
-    def __init__(self, u_max: float, x_min: float, x_max: float, T: int):
+    def __init__(self, T: int, u_max: float, x_min: float, x_max: float):
         """Initialize E1S flexibility set with constant power and energy bounds.
 
         Args:
@@ -157,5 +157,5 @@ class E1S(V1G):
         Returns:
             E1S instance with example parameters
         """
-        u_max, x_min, x_max = sample.e1s()
+        u_max, x_min, x_max = sample.e1s(T)
         return cls(u_max=u_max, x_min=x_min, x_max=x_max, T=T)

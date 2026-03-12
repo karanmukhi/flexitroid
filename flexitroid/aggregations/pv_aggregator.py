@@ -6,7 +6,7 @@ including the Minkowski sum of individual flexibility sets.
 
 from typing import List, Set, TypeVar, Generic
 from flexitroid.flexitroid import Flexitroid
-from flexitroid.devices.generation import PV
+from flexitroid.devices.pv import PV
 import numpy as np
 
 D = TypeVar("D", bound=PV)
@@ -16,7 +16,7 @@ class PVAggregator(Flexitroid, Generic[D]):
     """Generic aggregator for device flexibility sets.
 
     This class implements the aggregate flexibility set F(Ξₙ) as the Minkowski
-    sum of individual flexibility sets, represented as a g-polymatroid for a set of 
+    sum of individual flexibility sets, represented as a g-polymatroid for a set of
     PV devices.
     """
 

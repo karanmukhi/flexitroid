@@ -1,7 +1,6 @@
 from .general_der import GeneralDER, DERParameters
 import numpy as np
-from . import parameter_sampling as sample
-from typing import Set
+import flexitroid.utils.device_sampling as sample
 
 
 class V2G(GeneralDER):
@@ -53,8 +52,8 @@ class V2G(GeneralDER):
         u_max_arr[a:d] = u_max
 
         # Create SoC bound arrays with different constraints before/after departure
-        x_min_arr = np.full(T, -np.inf)  # Initialize with no constraints
-        x_max_arr = np.full(T, np.inf)  # Initialize with no constraints
+        x_min_arr = np.full(T, np.sum(u_min_arr))  # Initialize with no constraints
+        x_max_arr = np.full(T, np.sum(u_max_arr))  # Initialize with no constraints
 
         # Set SoC bounds before departure
         x_min_arr[:d] = x_min
@@ -78,7 +77,6 @@ class V2G(GeneralDER):
         self.e_min = e_min
         self.e_max = e_max
         self.active = set(range(a, d))
-
 
     @classmethod
     def example(cls, T: int = 24) -> "V2G":
@@ -118,7 +116,7 @@ class E2S(GeneralDER):
     energy storage system with bidirectional power flow.
     """
 
-    def __init__(self, u_min: float, u_max: float, x_min: float, x_max: float, T: int):
+    def __init__(self, T: int, u_min: float, u_max: float, x_min: float, x_max: float):
         """Initialize ESS flexibility set with constant power and energy bounds.
 
         Args:
@@ -167,5 +165,5 @@ class E2S(GeneralDER):
         x_min = capacity * soc_min  # 5kWh minimum
         x_max = capacity * soc_max  # 45kWh maximum
 
-        u_min, u_max, x_min, x_max = sample.e2s()
-        return cls(u_min=u_min, u_max=u_max, x_min=x_min, x_max=x_max, T=T)
+        u_min, u_max, x_min, x_max = sample.e2s(T)
+        return cls(T=T, u_min=u_min, u_max=u_max, x_min=x_min, x_max=x_max)

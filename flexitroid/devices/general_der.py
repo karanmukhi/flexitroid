@@ -7,37 +7,11 @@ including individual flexibility sets and their Minkowski sums.
 from dataclasses import dataclass
 from typing import Set
 import numpy as np
-from . import parameter_sampling as sample
+import flexitroid.utils.device_sampling as sample
+from flexitroid.utils.device_sampling import DERParameters
 from flexitroid.flexitroid import Flexitroid
-
-
-@dataclass
-class DERParameters:
-    """Parameters defining a DER's flexibility.
-
-    Args:
-        u_min: Lower bound on power consumption for each timestep.
-        u_max: Upper bound on power consumption for each timestep.
-        x_min: Lower bound on state of charge for each timestep.
-        x_max: Upper bound on state of charge for each timestep.
-    """
-
-    u_min: np.ndarray
-    u_max: np.ndarray
-    x_min: np.ndarray
-    x_max: np.ndarray
-
-    def __str__(self):
-        return 'sss'
-
-    def __post_init__(self):
-        """Validate parameter dimensions and constraints."""
-        T = len(self.u_min)
-        assert len(self.u_max) == T, "Power bounds must have same length"
-        assert len(self.x_min) == T, "SoC bounds must have same length"
-        assert len(self.x_max) == T, "SoC bounds must have same length"
-        assert np.all(self.u_min <= self.u_max), "Invalid power bounds"
-        assert np.all(self.x_min <= self.x_max), "Invalid SoC bounds"
+from flexitroid.cython.p_fast import p_fast
+from flexitroid.cython.b_fast import b_fast
 
 
 class GeneralDER(Flexitroid):
@@ -61,25 +35,46 @@ class GeneralDER(Flexitroid):
     def T(self) -> int:
         return self._T
 
-    @property
-    def A_b(self) -> np.ndarray:
+    def A_b(self, remove_redundant=False) -> np.ndarray:
         A = np.vstack(
-            [-np.eye(self.T), np.eye(self.T), -np.tri(self.T), np.tri(self.T)]
+            [np.eye(self.T), -np.eye(self.T), np.tri(self.T), -np.tri(self.T)]
         )
         b = np.concatenate(
             [
-                -self.params.u_min,
                 self.params.u_max,
-                -self.params.x_min,
+                -self.params.u_min,
                 self.params.x_max,
+                -self.params.x_min,
             ]
         )
-        A = A[np.isfinite(b)]
-        b = b[np.isfinite(b)]
+        if remove_redundant:
+            A = A[np.isfinite(b)]
+            b = b[np.isfinite(b)]
         return A, b
 
-
     def b(self, A: Set[int]) -> float:
+        return b_fast(
+            A,
+            self.T,
+            self.active,
+            self.params.u_min,
+            self.params.u_max,
+            self.params.x_min,
+            self.params.x_max,
+        )
+
+    def p(self, A: Set[int]) -> float:
+        return p_fast(
+            A,
+            self.T,
+            self.active,
+            self.params.u_min,
+            self.params.u_max,
+            self.params.x_min,
+            self.params.x_max,
+        )
+
+    def b_slow(self, A: Set[int]) -> float:
         A_c = self.active - A
         b = np.sum(self.params.u_max[list(A)])
         p_c = np.sum(self.params.u_min[list(A_c)])
@@ -106,8 +101,7 @@ class GeneralDER(Flexitroid):
             )
         return b
 
-
-    def p(self, A: Set[int]) -> float:
+    def p_slow(self, A: Set[int]) -> float:
         A_c = self.active - A
         p = np.sum(self.params.u_min[list(A)])
         b_c = np.sum(self.params.u_max[list(A_c)])
@@ -134,88 +128,6 @@ class GeneralDER(Flexitroid):
             )
         return p
 
-    # def b(self, A: Set[int]) -> float:
-    #     """Compute submodular function b for the g-polymatroid representation.
-
-    #     Args:
-    #         A: Subset of the ground set T.
-
-    #     Returns:
-    #         Value of b(A) as defined by the recursive formula.
-    #     """
-    #     if not A:
-    #         return 0.0
-
-    #     t_max = max(A)
-    #     T_t = set(range(t_max + 1))
-    #     A_c = T_t - A
-    #     b = np.sum(self.params.u_max[list(A)])
-    #     p_c = np.sum(self.params.u_min[list(A_c)])
-    #     t_set = set()
-    #     for t in range(t_max):
-    #         t_set.add(t)
-    #         b = np.min(
-    #             [
-    #                 b,
-    #                 self.params.x_max[t]
-    #                 - p_c
-    #                 + np.sum(self.params.u_min[list(A_c - t_set)])
-    #                 + np.sum(self.params.u_max[list(A - t_set)]),
-    #             ]
-    #         )
-    #         p_c = np.max(
-    #             [
-    #                 p_c,
-    #                 self.params.x_min[t]
-    #                 - b
-    #                 + np.sum(self.params.u_max[list(A - t_set)])
-    #                 + np.sum(self.params.u_min[list(A_c - t_set)]),
-    #             ]
-    #         )
-    #     return b
-
-    # def p(self, A: Set[int]) -> float:
-    #     """Compute supermodular function p for the g-polymatroid representation.
-
-    #     Args:
-    #         A: Subset of the ground set T.
-
-    #     Returns:
-    #         Value of p(A) as defined by the recursive formula.
-    #     """
-    #     if not A:
-    #         return 0.0
-
-    #     t_max = max(A)
-    #     T_t = set(range(t_max + 1))
-    #     A_c = T_t - A
-
-    #     p = np.sum(self.params.u_min[list(A)])
-    #     b_c = np.sum(self.params.u_max[list(A_c)])
-    #     t_set = set()
-
-    #     for t in range(t_max):
-    #         t_set.add(t)
-    #         p = np.max(
-    #             [
-    #                 p,
-    #                 self.params.x_min[t]
-    #                 - b_c
-    #                 + np.sum(self.params.u_max[list(A_c - t_set)])
-    #                 + np.sum(self.params.u_min[list(A - t_set)]),
-    #             ]
-    #         )
-    #         b_c = np.min(
-    #             [
-    #                 b_c,
-    #                 self.params.x_max[t]
-    #                 - p
-    #                 + np.sum(self.params.u_min[list(A - t_set)])
-    #                 + np.sum(self.params.u_max[list(A_c - t_set)]),
-    #             ]
-    #         )
-    #     return p
-
     @classmethod
     def example(cls, T: int = 24) -> "GeneralDER":
         """Create an example DER with typical power and energy constraints.
@@ -231,7 +143,5 @@ class GeneralDER(Flexitroid):
         Returns:
             GeneralDER instance with example parameters
         """
-        u_min, u_max, x_min, x_max = sample.der(T)
-
-        params = DERParameters(u_min=u_min, u_max=u_max, x_min=x_min, x_max=x_max)
+        params = sample.der(T)
         return cls(params)

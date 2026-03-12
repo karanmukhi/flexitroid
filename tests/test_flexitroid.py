@@ -44,7 +44,7 @@ def test_solve_linear_program():
 
     # Test with a simple cost vector
     c = np.array([1.0, 2.0, 3.0])
-    solution = flex.solve_linear_program(c)
+    solution = flex.greedy(c)
 
     # Basic checks
     assert len(solution) == 3

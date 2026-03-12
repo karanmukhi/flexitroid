@@ -13,19 +13,21 @@ build/
 .vscode/
 
 # Notebooks
-notebooks/# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-dist/
-build/
-
-# Virtual Environment
-.venv/
-
-# IDE
-.idea/
-.vscode/
+notebooks/
 
 # Development
 development/
+
+# Cython
+*.c
+*.so
+*.pyx
+flexitroid/cython/build/
+
+# OS
+.DS_Store
+
+# Data
+*.csv
+*.pdf
+*.ipynb
