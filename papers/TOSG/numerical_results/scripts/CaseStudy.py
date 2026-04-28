@@ -1,13 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-import os
 import csv
 from pathlib import Path
 
-import requests
 import datetime
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import flexitroid.utils.elexon_api as elexon_api
 from flexitroid.aggregations.aggregator import Aggregator
@@ -29,12 +25,12 @@ filename = DATA_DIR / f"day_ahead_price_curves_{datetime(2024, 11, 1).strftime('
 elexon_api.cache_day_ahead_price_curves(datetime(2024, 11, 1), datetime(2024, 12, 1), filename=str(filename))
 C = np.genfromtxt(filename, delimiter=",")
 
+C = C.reshape(C.shape[0], -1, 2).mean(axis=2)
 
-T = 4
-C = C[:,:T]
+T = C.shape[1]
 
 # Configuration
-NUM_RUNS = 3
+NUM_RUNS = 10
 CSV_PATH = DATA_DIR / 'case_study.csv'
 POPULATION_CONFIG = {
     'v2g_count': 10,
@@ -43,38 +39,48 @@ POPULATION_CONFIG = {
     'e2s_count': 40,
 }
 
-# Delete existing file if it exists
-if CSV_PATH.exists():
-    CSV_PATH.unlink()
+# Track whether the file already exists to decide on writing the header
+file_exists = CSV_PATH.exists()
 
 # Open file and create writer once
-with open(CSV_PATH, 'w', newline='') as csvfile:
+with open(CSV_PATH, 'a', newline='') as csvfile:
     writer = csv.writer(csvfile)
-    
-    for run_id in range(NUM_RUNS):
+    if not file_exists or CSV_PATH.stat().st_size == 0:
+        writer.writerow(["benchmark", "run_id", "t", "value"])
+
+    for run_idx in range(NUM_RUNS):
         # Initialize population and benchmarks for this run
         population = PopulationGenerator(T, **POPULATION_CONFIG)
+        run_id = np.random.randint(1000000)
         
         base_profile = population.base_line_consumption()
         g_polymatroid = Aggregator(population)
         general_affine = GeneralAffine(population)
-        homothet_projection = HomothetProjection(population)
+        zonotope = Zonotope(population)
+
+        t = 0
+        writer.writerow(['base_line', run_id, t, 0])
+        writer.writerow(['g-polymatroid', run_id, t, 0])
+        writer.writerow(['general_affine', run_id, t, 0])
+        writer.writerow(['zonotope', run_id, t, 0])
+        # homothet_projection = HomothetProjection(population)
 
         # Process each time step
         for t, c in enumerate(C):
             # Progress tracking
-            print(f'Run {run_id+1}/{NUM_RUNS}, Step {t+1}/{len(C)}', end='\r')
+            t += 1
+            print(f'Run {run_idx+1}/{NUM_RUNS}, Step {t}/{len(C)}             ', end='\r')
             
             # Solve optimization problems
             g_polymatroid_lp = g_polymatroid.greedy(c)
             general_affine.solve_lp(c)
-            homothet_projection.solve_lp(c)
+            zonotope.solve_lp(c)
 
             # Write results for all benchmarks
             writer.writerow(['base_line', run_id, t, c @ base_profile])
             writer.writerow(['g-polymatroid', run_id, t, c @ g_polymatroid_lp])
             writer.writerow(['general_affine', run_id, t, c @ general_affine.lp_x])
-            writer.writerow(['homothet', run_id, t, c @ homothet_projection.lp_x])
+            writer.writerow(['zonotope', run_id, t, c @ zonotope.lp_x])
         
         # Flush after each run to ensure data is written
         csvfile.flush()

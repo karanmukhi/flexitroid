@@ -13,7 +13,7 @@ plt.rcParams.update({
     "axes.labelsize": 10,
     "axes.titlesize": 10,
 })
-plt.rc('text', usetex=True)
+plt.rc('text', usetex=False)
 plt.rc('font', family='serif')
 plt.rc('axes', labelsize=10)     # Axis labels
 plt.rc('xtick', labelsize=8)     # X tick labels

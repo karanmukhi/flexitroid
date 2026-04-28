@@ -47,8 +47,8 @@ def v1g(T):
     d = np.random.randint(a + 2, T + 1)
 
     d = np.random.randint(a+2, T + 1)
-    a = 0
-    d = T
+    # a = 0
+    # d = T
     connected_time = d - a
 
     e_max = connected_time * u_max * np.random.uniform()

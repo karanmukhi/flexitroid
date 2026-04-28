@@ -19,22 +19,28 @@ def time_lp(approximation, N, T):
     c = np.random.uniform(-1,1, size=T)
     approximation(population).solve_lp(c)
 
-# N = 50
-# Ts = np.arange(0, 96, 12) + 12
-# n_runs = 10
+def time_lp_gp(approximation, N, T):
+    population = PopulationGenerator(T, e2s_count=N)
+    c = np.random.uniform(-1,1, size=T)
+    approximation(population).greedy(c)
 
-N = 4
-Ts = np.array([4,6,8,10])
+N = 100
+Ts = np.arange(0, 60, 12) + 12
 n_runs = 2
+
 
 
 with open(f'papers/TOSG/numerical_results/data/compVt.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(['benchmark', 'T', 'time'])
     for T in Ts:
+        print(T)
         for name, approximation in approximation_type.items():
             print(name)
-            time = timeit.timeit(lambda: time_lp(approximation, N, T), number=n_runs)
+            if name == 'G-Polymatroid':
+                time = timeit.timeit(lambda: time_lp_gp(approximation, N, T), number=n_runs)
+            else:
+                time = timeit.timeit(lambda: time_lp(approximation, N, T), number=n_runs)
             avg_time = time / n_runs
             writer.writerow([name, T, avg_time])
             print(f'{name} {T} {time}')
