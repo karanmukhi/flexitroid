@@ -10,8 +10,7 @@ import numpy as np
 import flexitroid.utils.device_sampling as sample
 from flexitroid.utils.device_sampling import DERParameters
 from flexitroid.flexitroid import Flexitroid
-from flexitroid.cython.p_fast import p_fast
-from flexitroid.cython.b_fast import b_fast
+
 
 
 class GeneralDER(Flexitroid):
